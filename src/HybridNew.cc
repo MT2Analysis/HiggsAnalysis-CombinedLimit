@@ -1234,15 +1234,18 @@ RooStats::HypoTestResult * HybridNew::evalWithFork(RooStats::HybridCalculator &h
         }
     } else {
         RooRandom::randomGenerator()->SetSeed(newSeeds[ich]); 
-        freopen(TString::Format("%s.%d.out.txt", tmpfile, ich).Data(), "w", stdout);
-        freopen(TString::Format("%s.%d.err.txt", tmpfile, ich).Data(), "w", stderr);
+        //freopen(TString::Format("%s.%d.out.txt", tmpfile, ich).Data(), "w", stdout);
+        freopen("/dev/null", "w", stdout);
+        //freopen(TString::Format("%s.%d.err.txt", tmpfile, ich).Data(), "w", stderr);
+	freopen("/dev/null", "w", stderr);
         std::cout << " I'm child " << ich << ", seed " << newSeeds[ich] << std::endl;
         RooStats::HypoTestResult *hcResult = evalGeneric(hc, /*noFork=*/true);
         TFile *f = TFile::Open(TString::Format("%s.%d.root", tmpfile, ich), "RECREATE");
         f->WriteTObject(hcResult, "result");
         f->ls();
         f->Close();
-        fflush(stdout); fflush(stderr);
+        fflush(stdout); 
+	fflush(stderr);
         std::cout << "And I'm done" << std::endl;
         throw std::runtime_error("done"); // I have to throw instead of exiting, otherwise there's no proper stack unwinding
                                           // and deleting of intermediate objects, and when the statics get deleted it crashes
