@@ -40,7 +40,6 @@ def interpolate(hist, step=2, direction="x"):
     # if step==0, interpolate all empty points in gap of any size
     # makes sense to run from big to small steps starting with "x" followed by "y" to optimize the usage of information
     # then use step=0 to fill remaining gaps if any
-    # xy -> diagonal interpolation
     if step%2 != 0:
         print "interponlation() step must be an even number"
         return
@@ -86,6 +85,30 @@ def interpolate(hist, step=2, direction="x"):
             else: #fill full gap
                 for nn in range(1,n):                    
                     hist.SetBinContent(b["x"]+nn*next["x"],b["y"]+nn*next["y"],val1+(val2-val1)*nn/n)
+
+def interpolateDiagonal(hist):
+    # interpolate in diagonal direction to fill remaining missing holes
+    # start from 15 bins away and finish in the diagonal
+    Nx = hist.GetNbinsX() 
+    Ny = hist.GetNbinsY()
+    for i in range(14,-1,-1): # 14...0
+        j=0
+        while i+j<Nx and j<Ny:
+           j+=1
+           val1=hist.GetBinContent(i+j,j)
+           if val1==0 or hist.GetBinContent(i+j+1,j+1)!=0:
+               continue
+
+           n=2
+           while hist.GetBinContent(i+j+n,j+n)==0 and i+j+n<Nx and j+n<Ny:
+               n+=1
+           val2 = hist.GetBinContent(i+j+n,j+n)
+           if val2==0:
+               continue
+           for nn in range(1,n):                    
+               hist.SetBinContent(i+j+nn,j+nn,val1+(val2-val1)*nn/n) 
+       
+
 
 
 def extractSmoothedContour(hist, nSmooth=1, optname=""):
@@ -228,6 +251,7 @@ for lim in limits:
     interpolate(h_lims_mu[lim], 2,"y")
     interpolate(h_lims_mu[lim], 0,"x")
     interpolate(h_lims_mu[lim], 0,"y")
+    interpolateDiagonal(h_lims_mu[lim])
 
 print "translating to x-sec and yes/no limits and saving 2d histos..."
 for lim in limits:
