@@ -14,6 +14,18 @@ if len(argv)<2:
 
 INPUT = argv[1]
 
+models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
+model = "mymodel"
+for m in models:
+    if m in INPUT:
+        model = m
+
+xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "theXSfile.root"
+f_xs = ROOT.TFile(xsfile)
+h_xs = f_xs.Get("xs")
+
+limits = ["obs", "exp", "ep1s", "em1s", "ep2s", "em2s", "op1s", "om1s"]
+
 
 def getLimitYN ( h_lim_mu, r_exluded=1):
     name = h_lim_mu.GetName().replace("mu","yn")
@@ -154,22 +166,40 @@ def extractSmoothedContour(hist, nSmooth=1, optname=""):
     del list
     return graph
 
+def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
+    rlim = {}
+    for line in open(INPUT, "r"):
+        m1        = float(line.split()[0])
+        m2        = float(line.split()[1])
+        for lim,index in fileMap.iteritems():
+            rlim[lim]  = float(line.split()[index])
+    
+        # get xs for the given mass
+        xs  = h_xs.GetBinContent(h_xs.FindBin(m1))
+        exs = h_xs.GetBinError  (h_xs.FindBin(m1))
+    
+        rlim['op1s'] = rlim['obs'] * xs / (xs+exs)
+        rlim['om1s'] = rlim['obs'] * xs / (xs-exs)
+    
+        #fill the 2d limit histos
+        binX=h_lims_mu0[lim].GetXaxis().FindBin(m1)
+        binY=h_lims_mu0[lim].GetYaxis().FindBin(m2)
+    
+        # remove by hand crazy strips in t1qqqq and T1tttt... under investigation
+        if (model=="T1qqqq" and 
+            ( ( binX==51 and (1<=binY<=15 or 41<=binY<=48)) or
+              ( binX==69 and  1<=binY<=15) or
+              ( binX==75 and 17<=binY<=23) ) ): 
+            continue
+        if (model=="T1tttt" and ( binX==71 and 41<=binY<=47) ):
+            continue
+    
+        for lim in limits:
+            h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
+            h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
+            h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
 
 
-models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
-model = "mymodel"
-for m in models:
-    if m in INPUT:
-        model = m
-
-
-xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "theXSfile.root"
-f_xs = ROOT.TFile(xsfile)
-h_xs = f_xs.Get("xs")
-
-
-
-limits = ["obs", "exp", "ep1s", "em1s", "ep2s", "em2s", "op1s", "om1s"]
 
 h_lims_mu0 = {} # limits in signal-strength, original binning
 h_lims_yn0 = {} # limits in excluded/non-exluded, original binning
@@ -186,6 +216,7 @@ mass2 = "mLSP"
 
 # create histos
 for lim in limits:
+    # uniform 25 GeV binning
     h_lims_mu0[lim] = ROOT.TH2F(lim+"_mu0", model, (m1max-m1min+25)/25, m1min-12.5, m1max+12.5, (m2max-m2min+25)/25, m2min-12.5, m2max+12.5)
     h_lims_mu0[lim].SetXTitle(mass1)    
     h_lims_mu0[lim].SetYTitle(mass2)
@@ -196,43 +227,8 @@ for lim in limits:
 
 # read txt file with limits
 print "reading file..."
-rlim = {}
-for line in open(INPUT, "r"):
-    m1        = float(line.split()[0])
-    m2        = float(line.split()[1])
-    rlim['exp']  = float(line.split()[2])
-    rlim['obs']  = float(line.split()[3])
-    rlim['ep1s']  = float(line.split()[4])
-    rlim['em1s']  = float(line.split()[5])
-    rlim['ep2s']  = float(line.split()[6])
-    rlim['em2s']  = float(line.split()[7])
-
-    # get xs for the given mass
-    xs  = h_xs.GetBinContent(h_xs.FindBin(m1))
-    exs = h_xs.GetBinError  (h_xs.FindBin(m1))
-
-    rlim['op1s'] = rlim['obs'] * xs / (xs+exs)
-    rlim['om1s'] = rlim['obs'] * xs / (xs-exs)
-
-    #fill the 2d limit histos
-    binX=h_lims_mu0[lim].GetXaxis().FindBin(m1)
-    binY=h_lims_mu0[lim].GetYaxis().FindBin(m2)
-
-    # remove by hand crazy strips in t1qqqq and T1tttt... under investigation
-    if (model=="T1qqqq" and 
-        ( ( binX==51 and (1<=binY<=15 or 41<=binY<=48)) or
-          ( binX==69 and  1<=binY<=15) or
-          ( binX==75 and 17<=binY<=23) ) ): 
-        continue
-    if (model=="T1tttt" and ( binX==71 and 41<=binY<=47) ):
-        continue
-
-    for lim in limits:
-        h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
-        h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
-        h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
-
-
+fileMap = {"obs":2, "exp":3, "ep1s":4, "em1s":5, "ep2s":6, "em2s":7}
+readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0)
 
 
 output = INPUT.replace(".txt",".root")
