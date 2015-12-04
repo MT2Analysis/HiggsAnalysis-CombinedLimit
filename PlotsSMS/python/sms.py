@@ -14,11 +14,11 @@ class sms():
         # decay chain
         self.label= "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow t #bar{t} #tilde{#chi}^{0}_{1}";
         # scan range to plot
-        self.Xmin = 600
-        self.Xmax = 2000
+        self.Xmin = 700
+        self.Xmax = 1950
         self.Ymin = 0
-        self.Ymax = 2000
-        self.Zmin = 0.001
+        self.Ymax = 1800
+        self.Zmin = 0.005
         self.Zmax = 2
         # produce sparticle
         self.sParticle = "m_{gluino} (GeV)"
@@ -38,7 +38,7 @@ class sms():
         self.Xmin = 600
         self.Xmax = 2000
         self.Ymin = 0
-        self.Ymax = 2000
+        self.Ymax = 1800
         self.Zmin = 0.001
         self.Zmax = 2
         # produce sparticle
@@ -58,8 +58,8 @@ class sms():
         self.Xmin = 600
         self.Xmax = 2000
         self.Ymin = 0
-        self.Ymax = 1800
-        self.Zmin = 0.001
+        self.Ymax = 1600
+        self.Zmin = 0.002
         self.Zmax = 2
         # produce sparticle
         self.sParticle = "m_{gluino} (GeV)"
