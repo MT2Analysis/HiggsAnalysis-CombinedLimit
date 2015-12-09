@@ -70,15 +70,6 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
         binX=h_lims_mu0[lim].GetXaxis().FindBin(m1)
         binY=h_lims_mu0[lim].GetYaxis().FindBin(m2)
     
-        # remove by hand crazy strips in t1qqqq and T1tttt... under investigation
-        if (model=="T1qqqq" and 
-            ( ( binX==51 and (1<=binY<=15 or 41<=binY<=48)) or
-              ( binX==69 and  1<=binY<=15) or
-              ( binX==75 and 17<=binY<=23) ) ): 
-            continue
-        if (model=="T1tttt" and ( binX==71 and 41<=binY<=47) ):
-            continue
-    
         for lim in limits:
             h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
             h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
@@ -89,10 +80,16 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
 h_lims_mu0 = {} # limits in signal-strength, original binning
 h_lims_yn0 = {} # limits in excluded/non-exluded, original binning
 h_lims_xs0 = {} # limits in cross-section, original binning
-h_lims_mu  = {} # limits in signal-strength, interpolated
-h_lims_yn  = {} # limits in excluded/non-exluded, interpolated
-h_lims_xs  = {} # limits in cross-section, interpolated
+
+h_lims_mu   = {} # limits in signal-strength, interpolated
+h_lims_yn   = {} # limits in excluded/non-exluded, interpolated
+h_lims_xs   = {} # limits in cross-section, interpolated
 g2_lims_mu  = {} # TGraph2D limits in signal-strength, automatic interpolation
+
+h_lims_mu1   = {} # limits in signal-strength, interpolated & smoothed
+h_lims_yn1   = {} # limits in excluded/non-exluded, interpolated & smoothed
+h_lims_xs1   = {} # limits in cross-section, interpolated & smoothed
+g2_lims_mu1  = {} # TGraph2D limits in signal-strength, automatic interpolation & smoothed
 
 m1min, m1max = 0, 2000
 m2min, m2max = 0, 2000
@@ -139,21 +136,51 @@ for lim in limits:
     h_lims_mu0[lim].Write()
     h_lims_xs0[lim].Write()
     h_lims_yn0[lim].Write()
-    h_lims_mu[lim].Write()
-    h_lims_xs[lim].Write()
-    h_lims_yn[lim].Write()
+    h_lims_mu [lim].Write()
+    h_lims_xs [lim].Write()
+    h_lims_yn [lim].Write()
 
 
-graphsMU = {}
-graphsYN = {}
+graphs0 = {}
+graphs1 = {}  # smoothed
 
 print "extracting contours and saving graphs..."
 for lim in limits:
     # get contour. If graph2D is properly filled there should be only one countour in the list
-    graphsMU[lim] = g2_lims_mu[lim].GetContourList(1.0).At(0)
-    graphsMU[lim].SetName("gr_"+lim)
-    graphsMU[lim].Write()
+
+    g_list = g2_lims_mu[lim].GetContourList(1.0)
+    max_points = -1
+    for il in range(g_list.GetSize()):
+        gr = g_list.At(il)
+        n_points = gr.GetN()
+        if n_points > max_points:
+            graphs0[lim] = gr
+            max_points = n_points
+    graphs0[lim].SetName("gr_"+lim)
+    graphs0[lim].Write()
     
+#print "smoothing..."
+#for lim in limits:
+#    h_lims_mu1[lim] = h_lims_mu[lim].Clone(h_lims_mu[lim].GetName()+"_smoothed")
+#    #smooth here
+#    h_lims_mu1[lim].Smooth(1,"k3a")
+#    g2_lims_mu1[lim] = ROOT.TGraph2D(h_lims_mu1[lim])
+#    g2_lims_mu1[lim].SetNpx( g2_lims_mu[lim].GetNpx() )
+#    g2_lims_mu1[lim].SetNpy( g2_lims_mu[lim].GetNpy() )
+#
+#    # get countour of smoothed version
+#    g_list = g2_lims_mu1[lim].GetContourList(1.0)
+#    max_points = -1
+#    for il in range(g_list.GetSize()):
+#        gr = g_list.At(il)
+#        n_points = gr.GetN()
+#        if n_points > max_points:
+#            graphs1[lim] = gr
+#            max_points = n_points
+#    graphs1[lim].SetName("gr_"+lim+"_smoothed")
+#    graphs1[lim].Write()
+
+
 print "saving x-check plots"
 plotsDir = "xcheckPlots"
 can = ROOT.TCanvas("can","can",600,600)
@@ -164,8 +191,11 @@ for lim in limits:
     h_lims_yn0[lim].GetXaxis().SetRangeUser(600,2000)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0  ,1500)
     h_lims_yn0[lim].Draw("colz")
-    graphsMU[lim].SetLineWidth(2)
-    graphsMU[lim].Draw("same")
+    graphs0[lim].SetLineWidth(2)
+    graphs0[lim].Draw("same")
+    graphs1[lim].SetLineWidth(2)
+    graphs1[lim].SetLineColor(2)
+    graphs1[lim].Draw("same")
     can.SaveAs(plotsDir+"/" + model + "_" + lim + ".eps")
     can.SaveAs(plotsDir+"/" + model + "_" + lim + ".png")
     can.SaveAs(plotsDir+"/" + model + "_" + lim + ".pdf")

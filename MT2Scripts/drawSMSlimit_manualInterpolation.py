@@ -185,15 +185,6 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
         binX=h_lims_mu0[lim].GetXaxis().FindBin(m1)
         binY=h_lims_mu0[lim].GetYaxis().FindBin(m2)
     
-        # remove by hand crazy strips in t1qqqq and T1tttt... under investigation
-        if (model=="T1qqqq" and 
-            ( ( binX==51 and (1<=binY<=15 or 41<=binY<=48)) or
-              ( binX==69 and  1<=binY<=15) or
-              ( binX==75 and 17<=binY<=23) ) ): 
-            continue
-        if (model=="T1tttt" and ( binX==71 and 41<=binY<=47) ):
-            continue
-    
         for lim in limits:
             h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
             h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
