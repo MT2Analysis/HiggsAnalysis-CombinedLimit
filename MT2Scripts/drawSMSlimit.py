@@ -76,6 +76,61 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
             h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
 
 
+def extractSmoothedContour(hist, nSmooth=1):
+    # if name contains "mu" histogram is signal strenght limit, otherwise it's a Yes/No limit
+    isMu = "mu" in hist.GetName()
+    #ROOT.gStyle.SetNumberContours(4 if isMu else 2)
+    shist = hist.Clone(hist.GetName()+"_smoothed")
+
+    # if smoothing a limit from mu, we need to modify the zeros outside the diagonal, otherwise the smoothing fools us in the diagonal transition
+    if isMu:
+        for ix in range(1, shist.GetNbinsX()):
+            for iy in range(shist.GetNbinsY(),0,-1):
+                if shist.GetBinContent(ix,iy)==0:
+                    for iyy in range(iy, shist.GetNbinsY()):
+                        shist.SetBinContent(ix,iyy, shist.GetBinContent(ix,iy-1))
+                else:
+                    continue
+
+    for s in range(nSmooth):
+        #shist.Smooth() # default smoothing algorithm
+        shist.Smooth(1,"k3a")  # k3a smoothing algorithm
+
+    # after smoothing a limit from mu, we need to modify the zeros outside the diagonal, otherwise the contours come wrong for the diagonal
+    if isMu:
+        for ix in range(1,shist.GetNbinsX()):
+            for iy in range(1,shist.GetNbinsY()):
+                if hist.GetBinContent(ix,iy)==0:
+                    shist.SetBinContent(ix,iy, 1.1)
+        
+    shist.SetMinimum(0)
+    shist.SetMaximum(2 if isMu else 1)
+    shist.SetContour(4 if isMu else 2)
+    canvas = ROOT.TCanvas()
+    shist.Draw("contz list")
+    ROOT.gPad.Update()
+    obj = ROOT.gROOT.GetListOfSpecials().FindObject("contours")
+    list = obj.At(1 if isMu else 0)
+    # take largest graph
+    max_points = -1
+    for l in range(list.GetSize()):
+        gr = list.At(l).Clone()
+        n_points = gr.GetN()
+        if n_points > max_points:
+            graph = gr
+            max_points = n_points
+
+    #graph = list.First().Clone()
+    name = "gr_"
+    name += shist.GetName()
+    graph.SetName(name)
+    graph.Draw("sameC")
+    del canvas
+    del shist
+    del obj
+    del list
+    return graph
+
 
 h_lims_mu0 = {} # limits in signal-strength, original binning
 h_lims_yn0 = {} # limits in excluded/non-exluded, original binning
@@ -85,11 +140,6 @@ h_lims_mu   = {} # limits in signal-strength, interpolated
 h_lims_yn   = {} # limits in excluded/non-exluded, interpolated
 h_lims_xs   = {} # limits in cross-section, interpolated
 g2_lims_mu  = {} # TGraph2D limits in signal-strength, automatic interpolation
-
-h_lims_mu1   = {} # limits in signal-strength, interpolated & smoothed
-h_lims_yn1   = {} # limits in excluded/non-exluded, interpolated & smoothed
-h_lims_xs1   = {} # limits in cross-section, interpolated & smoothed
-g2_lims_mu1  = {} # TGraph2D limits in signal-strength, automatic interpolation & smoothed
 
 m1min, m1max = 0, 2000
 m2min, m2max = 0, 2000
@@ -146,8 +196,7 @@ graphs1 = {}  # smoothed
 
 print "extracting contours and saving graphs..."
 for lim in limits:
-    # get contour. If graph2D is properly filled there should be only one countour in the list
-
+    # get contour. choose the one with maximum number of points
     g_list = g2_lims_mu[lim].GetContourList(1.0)
     max_points = -1
     for il in range(g_list.GetSize()):
@@ -159,26 +208,12 @@ for lim in limits:
     graphs0[lim].SetName("gr_"+lim)
     graphs0[lim].Write()
     
-#print "smoothing..."
-#for lim in limits:
-#    h_lims_mu1[lim] = h_lims_mu[lim].Clone(h_lims_mu[lim].GetName()+"_smoothed")
-#    #smooth here
-#    h_lims_mu1[lim].Smooth(1,"k3a")
-#    g2_lims_mu1[lim] = ROOT.TGraph2D(h_lims_mu1[lim])
-#    g2_lims_mu1[lim].SetNpx( g2_lims_mu[lim].GetNpx() )
-#    g2_lims_mu1[lim].SetNpy( g2_lims_mu[lim].GetNpy() )
-#
-#    # get countour of smoothed version
-#    g_list = g2_lims_mu1[lim].GetContourList(1.0)
-#    max_points = -1
-#    for il in range(g_list.GetSize()):
-#        gr = g_list.At(il)
-#        n_points = gr.GetN()
-#        if n_points > max_points:
-#            graphs1[lim] = gr
-#            max_points = n_points
-#    graphs1[lim].SetName("gr_"+lim+"_smoothed")
-#    graphs1[lim].Write()
+print "smoothing..."
+for lim in limits:
+    nSmooth = 2 if model!="T1tttt" else 3  # more aggresive smoothing for t1tttt since it's full of holes
+    graphs1[lim] = extractSmoothedContour(h_lims_mu[lim], nSmooth)
+    graphs1[lim].SetName( graphs1[lim].GetName().replace("_mu","") ) 
+    graphs1[lim].Write()
 
 
 print "saving x-check plots"
@@ -202,4 +237,4 @@ for lim in limits:
 
 
 print "file "+output+" saved"
-fout.Close()
+#fout.Close()
