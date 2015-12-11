@@ -1,6 +1,5 @@
 import sys
 import ROOT as rt
-rt.gROOT.SetBatch(True)
 
 class inputFile():
 
@@ -28,9 +27,7 @@ class inputFile():
             if tmpLINE[0] != "HISTOGRAM": continue
             fileIN.close()
             rootFileIn = rt.TFile.Open(tmpLINE[1])
-            x = rootFileIn.Get(tmpLINE[2])
-            x.SetDirectory(0)
-            return {'histogram': x}
+            return {'histogram': rootFileIn.Get(tmpLINE[2])}
             
     def findEXPECTED(self, fileName):
         fileIN = open(fileName)        
