@@ -17,7 +17,9 @@ class sms():
         self.Xmin = 700
         self.Xmax = 1950
         self.Ymin = 0
-        self.Ymax = 1800
+        self.Ymax = 1900
+        self.Zmin = 0.001
+        self.Zmax = 2
         # produce sparticle
         self.sParticle = "m_{#tilde{g}} [GeV]"
         # LSP
@@ -26,6 +28,8 @@ class sms():
         mT = 175
         self.diagX = array('d',[0,20000])
         self.diagY = array('d',[-mT, 20000-mT])        
+        # turn off diagonal lines
+        self.diagOn = False
         
     def T1bbbb(self):
         # model name
@@ -34,9 +38,11 @@ class sms():
         self.label= "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow b #bar{b} #tilde{#chi}^{0}_{1}";
         # plot boundary. The top 1/4 of the y axis is taken by the legend
         self.Xmin = 600
-        self.Xmax = 2000
+        self.Xmax = 1950
         self.Ymin = 0
-        self.Ymax = 1800
+        self.Ymax = 1900
+        self.Zmin = 0.001
+        self.Zmax = 2
         # produce sparticle
         self.sParticle = "m_{#tilde{g}} [GeV]"
         # LSP
@@ -44,6 +50,8 @@ class sms():
         # diagonal position: mLSP = mgluino - 2mtop
         self.diagX = array('d',[0,20000])
         self.diagY = array('d',[0, 20000])
+        # turn off diagonal lines
+        self.diagOn = False
  
     def T1qqqq(self):
         # model name
@@ -52,9 +60,11 @@ class sms():
         self.label= "pp #rightarrow #tilde{g} #tilde{g}, #tilde{g} #rightarrow q #bar{q} #tilde{#chi}^{0}_{1}";
         # plot boundary. The top 1/4 of the y axis is taken by the legend
         self.Xmin = 600
-        self.Xmax = 2000
+        self.Xmax = 1950
         self.Ymin = 0
         self.Ymax = 1600
+        self.Zmin = 0.001
+        self.Zmax = 2
         # produce sparticle
         self.sParticle = "m_{#tilde{g}} [GeV]"
         # LSP
@@ -62,3 +72,5 @@ class sms():
         # diagonal position: mLSP = mgluino - 2mtop
         self.diagX = array('d',[0,20000])
         self.diagY = array('d',[0, 20000])
+        # turn off diagonal lines
+        self.diagOn = False
