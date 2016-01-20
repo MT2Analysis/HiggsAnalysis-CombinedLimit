@@ -3,6 +3,9 @@ from array import *
 from sms import *
 from color import *
 import CMS_lumi
+import os
+import math
+
 class smsPlotABS(object):
     # modelname is the sms name (see sms.py)
     # histo is the 2D xsec map
@@ -117,7 +120,8 @@ class smsPlotABS(object):
 
     def Save(self,label):
         # save the output
-        self.c.SaveAs("%s.pdf" %label)
+        os.system("mkdir -p plots")
+        self.c.SaveAs("plots/%s.pdf" %label)
         
     def DrawLegend(self):
         xRange = self.model.Xmax-self.model.Xmin
@@ -206,6 +210,28 @@ class smsPlotABS(object):
         self.c.LExpM = LExpM
         self.c.LExpP = LExpP
 
+    def DrawMtopDiagonal(self):
+        diagX = array('f',[self.model.mT+self.model.dM,self.model.mT+self.model.dM+5000,self.model.mT-self.model.dM+5000,self.model.mT-self.model.dM])
+        diagY = array('f',[0,5000,5000,0])
+        gdiagonal = rt.TGraph(4, diagX, diagY)
+        gdiagonal.SetName("MtopDiagonal")
+        gdiagonal.SetFillColor(rt.kWhite)
+        #gdiagonal.SetFillColor(18)
+        ldiagonal = rt.TLine(self.model.mT,0,self.model.mT+self.model.Ymax,self.model.Ymax)
+        ldiagonal.SetLineColor(rt.kGray)
+        ldiagonal.SetLineStyle(2)
+        tdiagonal = rt.TLatex(200, 200-self.model.mT,"m_{#tilde{t}} = m_{t} + m_{#tilde{#chi}_{1}^{0}}")
+        tdiagonal.SetTextAngle(math.degrees(math.atan(float(self.model.Xmax)/float(self.model.Ymax))))
+        tdiagonal.SetTextColor(rt.kGray+2)
+        tdiagonal.SetTextAlign(11)
+        tdiagonal.SetTextSize(0.025)
+        gdiagonal.Draw("FSAME")
+        ldiagonal.Draw("LSAME")
+        tdiagonal.Draw("SAME")
+        self.c.mtopgdiagonal = gdiagonal
+        self.c.mtopldiagonal = ldiagonal
+        self.c.mtoptdiagonal = tdiagonal
+ 
     def DrawDiagonal(self):
         diagonal = rt.TGraph(3, self.model.diagX, self.model.diagY)
         diagonal.SetName("diagonal")
@@ -213,7 +239,7 @@ class smsPlotABS(object):
         diagonal.SetLineColor(rt.kGray)
         diagonal.SetLineStyle(2)
         diagonal.Draw("FSAME")
-        diagonal.Draw("LSAME")
+        #diagonal.Draw("LSAME")
         self.c.diagonal = diagonal
         
     def DrawLines(self):
