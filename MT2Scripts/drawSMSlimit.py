@@ -142,7 +142,7 @@ def extractSmoothedContour(hist, nSmooth=1):
     return [graph[0][1], graph[1][1]]  # return list of two largest graphs
 
 
-def extractSmoothedContourRL(hist, nSmooth1):
+def extractSmoothedContourRL(hist, nSmooth=1):
     hR, hL = hist.Clone("muR"), hist.Clone("muL")
     for ix in range(1,hist.GetNbinsX()+1):
         for iy in range(1,hist.GetNbinsY()+1):
