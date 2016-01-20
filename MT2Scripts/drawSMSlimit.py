@@ -21,7 +21,7 @@ for m in models:
         model = m
 
 xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" else "theXSfile.root"
-f_xs = ROOT.TFile(xsfile)
+f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
 h_xs = f_xs.Get("xs")
 
 limits = ["obs", "exp", "ep1s", "em1s", "ep2s", "em2s", "op1s", "om1s"]
