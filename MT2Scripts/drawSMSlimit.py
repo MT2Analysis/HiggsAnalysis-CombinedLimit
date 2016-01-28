@@ -7,12 +7,14 @@ import ROOT
 
 print "runing:", argv
 
-
 if len(argv)<2:
     print "Usage: "+argv[0]+" fileWithLimits.txt"
     exit(1)
 
 INPUT = argv[1]
+
+# get contours separately for the left and right side of the deltaM=Mtop diagonal (T2tt)
+divideTopDiagonal = False
 
 models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
 model = "mymodel"
@@ -20,11 +22,12 @@ for m in models:
     if m in INPUT:
         model = m
 
-xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" else "theXSfile.root"
+xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" else "theXSfile.root"
 f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
 h_xs = f_xs.Get("xs")
 
 limits = ["obs", "exp", "ep1s", "em1s", "ep2s", "em2s", "op1s", "om1s"]
+#limits = ["obs", "exp"]
 
 # coloum-limit map for txt files (n -> column n+1) 
 fileMap = {"exp":2, "obs":3, "ep1s":4, "em1s":5, "ep2s":6, "em2s":7}
@@ -259,13 +262,15 @@ print "extracting contours and saving graphs..."
 for lim in limits:
     # get contour. choose the one with maximum number of points
     g_list = g2_lims_mu[lim].GetContourList(1.0)
-    max_points = -1
+    graphs = []
     for il in range(g_list.GetSize()):
         gr = g_list.At(il)
         n_points = gr.GetN()
-        if n_points > max_points:
-            graphs0[lim] = gr
-            max_points = n_points
+        graphs.append((n_points,gr))
+    graphs.sort(reverse=True)
+    graphs0[lim] = graphs[0][1]
+    if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+        graphs0[lim]=mergeGraphs([graphs[0][1],graphs[1][1]])
     graphs0[lim].SetName("gr_"+lim)
     graphs0[lim].Write()
     
@@ -273,9 +278,11 @@ for lim in limits:
 print "smoothing..."
 for lim in limits:
     nSmooth = 1 if model=="T2tt" else 2 if model!="T1tttt" else 3  # more aggresive smoothing for t1tttt since it's full of holes
-    if model!="T2tt":
+    if model!="T2tt" or not divideTopDiagonal:
         graphs = extractSmoothedContour(h_lims_mu[lim], nSmooth)
         graphs1[lim]=graphs[0]
+        if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+            graphs1[lim]=mergeGraphs(graphs)
     else:
         graphs = extractSmoothedContourRL(h_lims_mu[lim], nSmooth)
         graphs1[lim]=mergeGraphs(graphs)
@@ -295,9 +302,9 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 100 if model=="T2tt" else 0
-    xmax = 1000 if model=="T2tt" else 2000
-    ymax = 600  if model=="T2tt" else 1500
+    xmin = 600 if "T1" in model else 100 if model=="T2tt" else 300 if model=="T2bb" else 0
+    xmax = 1000 if model=="T2tt" or model=="T2bb" else 2000
+    ymax = 600  if model=="T2tt" else 800 if "T2bb" else 1500
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_lims_yn0[lim].Draw("colz")
