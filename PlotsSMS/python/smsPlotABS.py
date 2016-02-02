@@ -120,6 +120,26 @@ class smsPlotABS(object):
         textNLONLL.Draw()
         #self.c.textNLONLL = textNLONLL
 
+        # Labels for the two set of curves in T2qq 
+        if not self.OBS2: return
+
+        # 8 squark label
+        text8squark= rt.TLatex(750,600,"#tilde{q}_{L}+#tilde{q}_{R} (#tilde{u}, #tilde{d}, #tilde{s}, #tilde{c})")
+        #text8squark.SetNDC()
+        text8squark.SetTextAlign(11)
+        text8squark.SetTextFont(42)
+        text8squark.SetTextSize(0.035)
+        text8squark.Draw()
+        self.c.text8squark = text8squark
+        # 1 squark label
+        text1squark= rt.TLatex(470,300,"one light #tilde{q}")
+        #text1squark.SetNDC()
+        text1squark.SetTextAlign(11)
+        text1squark.SetTextFont(42)
+        text1squark.SetTextSize(0.035)
+        text1squark.Draw()
+        self.c.text1squark = text1squark
+
     def Save(self,label):
         # save the output
         os.system("mkdir -p plots")
@@ -221,7 +241,7 @@ class smsPlotABS(object):
         if 'plus2' not in self.EXP:
             textExp = rt.TLatex(self.model.Xmin+11*xRange/100, self.model.Ymax-2.15*yRange/100*10, "Expected #pm 1 #sigma_{experiment}")
         else:
-            textExp = rt.TLatex(self.model.Xmin+11*xRange/100, self.model.Ymax-2.15*yRange/100*10, "Expected #pm 1/2 #sigma_{experiment}")
+            textExp = rt.TLatex(self.model.Xmin+11*xRange/100, self.model.Ymax-2.15*yRange/100*10, "Expected #pm 1, 2 #sigma_{experiment}")
         textExp.SetTextFont(42)
         textExp.SetTextSize(0.040)
         textExp.Draw()
@@ -247,13 +267,14 @@ class smsPlotABS(object):
             LExp2M.c = LExp2M
             LExp2P.c = LExp2P
 
-    def DrawMtopDiagonal(self):
+    def DrawMtopDiagonal(self, transparency=1):
         diagX = array('f',[self.model.mT+self.model.dM,self.model.mT+self.model.dM+5000,self.model.mT-self.model.dM+5000,self.model.mT-self.model.dM])
         diagY = array('f',[0,5000,5000,0])
         gdiagonal = rt.TGraph(4, diagX, diagY)
         gdiagonal.SetName("MtopDiagonal")
-        gdiagonal.SetFillColor(rt.kWhite)
-        #gdiagonal.SetFillColorAlpha(rt.kWhite, 0.5)
+        #gdiagonal.SetFillColor(rt.kWhite)
+        gdiagonal.SetFillColorAlpha(rt.kWhite, transparency)
+        #gdiagonal.SetFillColorAlpha(18, 0.7)
         #gdiagonal.SetFillColor(18)
         ldiagonal = rt.TLine(self.model.mT,0,self.model.mT+self.model.Ymax,self.model.Ymax)
         ldiagonal.SetLineColor(rt.kGray)
@@ -359,12 +380,12 @@ class smsPlotABS(object):
         if 'minus2' in self.EXP2: self.EXP2['minus2'].SetLineStyle(3)
         if 'minus2' in self.EXP2: self.EXP2['minus2'].SetLineWidth(2)                        
         # DRAW LINES
-        self.OBS2['nominal'].Draw("LSAME")
-        self.OBS2['plus'].Draw("LSAME")
-        self.OBS2['minus'].Draw("LSAME")        
         self.EXP2['nominal'].Draw("LSAME")
         self.EXP2['plus'].Draw("LSAME")
         self.EXP2['minus'].Draw("LSAME")
+        self.OBS2['nominal'].Draw("LSAME")
+        self.OBS2['plus'].Draw("LSAME")
+        self.OBS2['minus'].Draw("LSAME")        
         if 'plus2'  in self.EXP2: self.EXP2['plus2' ].Draw("LSAME")
         if 'minus2' in self.EXP2: self.EXP2['minus2'].Draw("LSAME")
         

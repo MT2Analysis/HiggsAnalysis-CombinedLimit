@@ -63,11 +63,21 @@ class smsPlotXSEC(smsPlotABS):
         self.emptyHisto.GetYaxis().SetRangeUser(self.model.Ymin, self.model.Ymax)
         self.emptyHisto.Draw()
         self.histo.Draw("COLZSAME")
+        if self.model.mTopDiagOn:
+            self.DrawMtopDiagonal(1)
         self.DrawLines()
         if self.model.diagOn:
             self.DrawDiagonal()
         if self.model.mTopDiagOn:
-            self.DrawMtopDiagonal()
+            gdiagonal = self.c.mtopgdiagonal.Clone("MtopDiagonalClone")
+            gdiagonal.SetFillColorAlpha(rt.kWhite, 0.6)
+            ldiagonal = self.c.mtopldiagonal
+            tdiagonal = self.c.mtoptdiagonal
+            gdiagonal.Draw("FSAME")
+            ldiagonal.Draw("LSAME")
+            tdiagonal.Draw("SAME")
+            self.c.mtopgdiagonal2 = gdiagonal
+            #self.DrawMtopDiagonal(1)
         self.DrawText()
         self.DrawLegend()
         self.DrawPaletteLabel()

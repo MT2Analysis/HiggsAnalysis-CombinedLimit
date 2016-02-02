@@ -8,6 +8,7 @@ class sms():
         if modelname.find("T1qqqq") != -1: self.T1qqqq()
         if modelname.find("T2tt")   != -1: self.T2tt  ()
         if modelname.find("T2bb")   != -1: self.T2bb  ()
+        if modelname.find("T2qq")   != -1: self.T2qq  ()
 
 
     def T1tttt(self):
@@ -92,6 +93,8 @@ class sms():
         self.Ymax = 500
         self.Zmin = 0.001
         self.Zmax = 20
+        #self.Zmin = 0.1
+        #self.Zmax = 10
         # produce sparticle
         self.sParticle = "m_{#tilde{t}} [GeV]"
         # LSP
@@ -120,6 +123,32 @@ class sms():
         self.Zmax = 20
         # produce sparticle
         self.sParticle = "m_{#tilde{b}} [GeV]"
+        # LSP
+        self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
+        # diagonal position: mLSP = mgluino - 2mtop 
+        mW = 75
+        self.diagX = array('d',[0,20000])
+        self.diagY = array('d',[-mW, 20000-mW])        
+        # turn off diagonal lines
+        self.diagOn = False
+        #self.mT, self.dM = 172.5, 6.25
+        self.mT, self.dM = 175, 25
+        self.mTopDiagOn = False
+        
+    def T2qq(self):
+        # model name
+        self.modelname = "T2qq"
+        # decay chain
+        self.label= "pp #rightarrow #tilde{q} #tilde{q}, #tilde{q} #rightarrow q #tilde{#chi}^{0}_{1}";
+        # scan range to plot
+        self.Xmin = 400
+        self.Xmax = 1500
+        self.Ymin = 0
+        self.Ymax = 1200
+        self.Zmin = 0.001
+        self.Zmax = 5
+        # produce sparticle
+        self.sParticle = "m_{#tilde{q}} [GeV]"
         # LSP
         self.LSP = "m_{#tilde{#chi}_{1}^{0}} [GeV]"
         # diagonal position: mLSP = mgluino - 2mtop 
