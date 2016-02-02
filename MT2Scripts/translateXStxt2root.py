@@ -1,11 +1,13 @@
 import ROOT
+from sys import argv
 
 #line format
 # Interactions - gluinos  Nominal (pb) +/- Uncertainty
 # 200 GeV 3574.52 +/- 14.0616%
 
+txtfile = argv[1] if len(argv)>0 else "SUSYCrossSections13TeVgluglu.txt"
 
-xsFile = open("SUSYCrossSections13TeVgluglu.txt")
+xsFile = open(txtfile)
 lines = [x.strip('\n') for x in xsFile if "GeV" in x]
 
 h_xs = ROOT.TH1F("xs","", 561, 197.5, 3002.5)
