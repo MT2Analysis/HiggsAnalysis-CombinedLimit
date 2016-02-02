@@ -8,13 +8,16 @@ import ROOT
 print "runing:", argv
 
 if len(argv)<2:
-    print "Usage: "+argv[0]+" fileWithLimits.txt"
+    print "Usage: "+argv[0]+" fileWithLimits.txt [doOneFold (default=False)]"
     exit(1)
 
 INPUT = argv[1]
+doOneFold = (argv[2]=='True' or argv[2]=='true') if len(argv)>2 else False
 
 # get contours separately for the left and right side of the deltaM=Mtop diagonal (T2tt)
-divideTopDiagonal = False
+divideTopDiagonal = True
+
+
 
 models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
 model = "mymodel"
@@ -22,7 +25,7 @@ for m in models:
     if m in INPUT:
         model = m
 
-xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" else "theXSfile.root"
+xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" else "SUSYCrossSections13TeVsquarkantisquark.root" if model=="T2qq" else "theXSfile.root"
 f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
 h_xs = f_xs.Get("xs")
 
@@ -65,6 +68,9 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
         # get xs for the given mass
         xs  = h_xs.GetBinContent(h_xs.FindBin(m1))
         exs = h_xs.GetBinError  (h_xs.FindBin(m1))
+
+        if model == "T2qq":  # mu of T2qq already normilized by 8/10 (8-fold)
+            xs, exs = xs*0.8, exs*0.8
     
         rlim['op1s'] = rlim['obs'] * xs / (xs+exs)
         rlim['om1s'] = rlim['obs'] * xs / (xs-exs)
@@ -74,6 +80,8 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
         binY=h_lims_mu0[lim].GetYaxis().FindBin(m2)
     
         for lim in limits:
+            if model == "T2qq" and doOneFold:
+                rlim[lim] *= 8 # from 8-fold to 1-fold
             h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
             h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
             h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
@@ -223,7 +231,7 @@ def fillHorizontalBelowZero(hist):
     for ix in range(1,hist.GetNbinsX()+1):
         hist.SetBinContent( ix,1,hist.GetBinContent(ix,2) )
 
-output = INPUT.replace(".txt",".root")
+output = INPUT.replace(".txt", ("-OneFold" if (model=="T2qq" and doOneFold) else "") + ".root")
 fout = ROOT.TFile(output, "RECREATE")
 fout.cd()
 
@@ -238,6 +246,13 @@ for lim in limits:
     h_lims_mu[lim] = g2_lims_mu[lim].GetHistogram()
     h_lims_mu[lim].SetName( h_lims_mu0[lim].GetName().replace("mu0","mu") )
              
+    #remove crazy bins that appear in T2qq for no reason
+    for ix in range(1,h_lims_mu[lim].GetNbinsX()+1):
+        for iy in range(1,h_lims_mu[lim].GetNbinsY()+1):
+            if h_lims_mu[lim].GetBinContent(ix,iy) < 0:
+                h_lims_mu[lim].SetBinContent(ix,iy,0)
+
+
 
 print "translating to x-sec and yes/no limits and saving 2d histos..."
 for lim in limits:
@@ -302,9 +317,9 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 100 if model=="T2tt" else 300 if model=="T2bb" else 0
-    xmax = 1000 if model=="T2tt" or model=="T2bb" else 2000
-    ymax = 600  if model=="T2tt" else 800 if "T2bb" else 1500
+    xmin = 600 if "T1" in model else 100 if model=="T2tt" else 300 if model=="T2bb" else 400 if model=="T2qq" else 0
+    xmax = 1000 if model=="T2tt" or model=="T2bb" else 1500 if model=="T2qq" else 2000
+    ymax = 600  if model=="T2tt" else 800 if model=="T2bb" else 1000 if model=="T2qq" else 1500
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_lims_yn0[lim].Draw("colz")
@@ -319,4 +334,4 @@ for lim in limits:
 
 
 print "file "+output+" saved"
-fout.Close()
+#fout.Close()
