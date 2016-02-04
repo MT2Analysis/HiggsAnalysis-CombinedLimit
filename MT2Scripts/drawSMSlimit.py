@@ -15,7 +15,7 @@ INPUT = argv[1]
 doOneFold = (argv[2]=='True' or argv[2]=='true') if len(argv)>2 else False
 
 # get contours separately for the left and right side of the deltaM=Mtop diagonal (T2tt)
-divideTopDiagonal = True
+divideTopDiagonal = False
 
 
 
@@ -176,12 +176,12 @@ def extractSmoothedContourRL(hist, nSmooth=1):
     return [gR,gL]
     
 
-def unexcludeDiagonal(hist): 
+def unexcludeDiagonal(hist, mSplit=175): 
     for ix in range(1,hist.GetNbinsX()+1):
         for iy in range(1,hist.GetNbinsY()+1):
             m1, m2 = hist.GetXaxis().GetBinLowEdge(ix), hist.GetYaxis().GetBinLowEdge(iy)
             val = hist.GetBinContent(ix,iy)
-            if m1-m2==175:
+            if m1-m2==mSplit:
                 hist.SetBinContent(ix,iy, max(1.5,val))
 
 def mergeGraphs(graphs):
@@ -246,11 +246,14 @@ for lim in limits:
     h_lims_mu[lim] = g2_lims_mu[lim].GetHistogram()
     h_lims_mu[lim].SetName( h_lims_mu0[lim].GetName().replace("mu0","mu") )
              
-    #remove crazy bins that appear in T2qq for no reason
+    #remove negative or nan bins that appear in T2qq for no apparent reason
     for ix in range(1,h_lims_mu[lim].GetNbinsX()+1):
         for iy in range(1,h_lims_mu[lim].GetNbinsY()+1):
-            if h_lims_mu[lim].GetBinContent(ix,iy) < 0:
+            if h_lims_mu[lim].GetBinContent(ix,iy) < 0: #if negative set to zero
                 h_lims_mu[lim].SetBinContent(ix,iy,0)
+            if isnan(h_lims_mu[lim].GetBinContent(ix,iy)): #if nan set to neighbour average
+                val = (h_lims_mu[lim].GetBinContent(ix+1,iy) + h_lims_mu[lim].GetBinContent(ix-1,iy) + h_lims_mu[lim].GetBinContent(ix,iy+1) + h_lims_mu[lim].GetBinContent(ix,iy-1) )/4.0
+                h_lims_mu[lim].SetBinContent(ix,iy,val)
 
 
 
@@ -258,7 +261,9 @@ print "translating to x-sec and yes/no limits and saving 2d histos..."
 for lim in limits:
     #if model=="T2tt":
     #    unexcludeDiagonal( h_lims_mu[lim] )
-
+    #if model=="T2bb":  # do this for summary plot as per FKW request
+    #    unexcludeDiagonal( h_lims_mu[lim],25 )    
+    
     h_lims_yn[lim] = getLimitYN ( h_lims_mu[lim] )
     h_lims_xs[lim] = getLimitXS ( h_lims_mu[lim], h_xs )
     
@@ -292,7 +297,7 @@ for lim in limits:
 
 print "smoothing..."
 for lim in limits:
-    nSmooth = 1 if model=="T2tt" else 2 if model!="T1tttt" else 3  # more aggresive smoothing for t1tttt since it's full of holes
+    nSmooth = 1 if model=="T2tt" else 2 if model!="T2qq" else 3
     if model!="T2tt" or not divideTopDiagonal:
         graphs = extractSmoothedContour(h_lims_mu[lim], nSmooth)
         graphs1[lim]=graphs[0]
