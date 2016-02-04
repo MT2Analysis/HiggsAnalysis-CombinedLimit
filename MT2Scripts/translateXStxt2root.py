@@ -10,7 +10,11 @@ txtfile = argv[1] if len(argv)>0 else "SUSYCrossSections13TeVgluglu.txt"
 xsFile = open(txtfile)
 lines = [x.strip('\n') for x in xsFile if "GeV" in x]
 
-h_xs = ROOT.TH1F("xs","", 561, 197.5, 3002.5)
+bin_size = 5.0
+mmin = 100.
+mmax = 3000.
+
+h_xs = ROOT.TH1F("xs","", int((mmax-mmin)/bin_size)+1, mmin-bin_size/2., mmax+bin_size/2.)
 
 for line in lines:
     mass = float(line.split()[0])
