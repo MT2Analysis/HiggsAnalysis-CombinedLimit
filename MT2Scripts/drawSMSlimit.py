@@ -18,14 +18,13 @@ doOneFold = (argv[2]=='True' or argv[2]=='true') if len(argv)>2 else False
 divideTopDiagonal = False
 
 
-
-models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
+models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt","T2cc"]
 model = "mymodel"
 for m in models:
     if m in INPUT:
         model = m
 
-xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" else "SUSYCrossSections13TeVsquarkantisquark.root" if model=="T2qq" else "theXSfile.root"
+xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "SUSYCrossSections13TeVsquarkantisquark.root" if model=="T2qq" else "theXSfile.root"
 f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
 h_xs = f_xs.Get("xs")
 
@@ -86,6 +85,28 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
             h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
             h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
 
+def interpolateDiagonal(hist):
+    # interpolate in diagonal direction to fill remaining missing holes
+    # start from 15 bins away and finish in the diagonal
+    Nx = hist.GetNbinsX() 
+    Ny = hist.GetNbinsY()
+    for i in range(14,-1,-1): # 14...0
+        j=0
+        while i+j<Nx and j<Ny:
+           j+=1
+           val1=hist.GetBinContent(i+j,j)
+           if val1==0 or hist.GetBinContent(i+j+1,j+1)!=0:
+               continue
+
+           n=2
+           while hist.GetBinContent(i+j+n,j+n)==0 and i+j+n<Nx and j+n<Ny:
+               n+=1
+           val2 = hist.GetBinContent(i+j+n,j+n)
+           if val2==0:
+               continue
+           for nn in range(1,n):                    
+               hist.SetBinContent(i+j+nn,j+nn,val1+(val2-val1)*nn/n) 
+
 
 def extractSmoothedContour(hist, nSmooth=1):
     # if name contains "mu" histogram is signal strenght limit, otherwise it's a Yes/No limit
@@ -102,6 +123,17 @@ def extractSmoothedContour(hist, nSmooth=1):
                         shist.SetBinContent(ix,iyy, shist.GetBinContent(ix,iy-1))
                 else:
                     break
+        if model=="T2cc": # for T2cc do it also  bottom-up
+            # after smoothing a limit from mu, we need to modify the zeros outside the diagonal, otherwise the contours come wrong for the diagonal 
+            interpolateDiagonal(hist)
+            for ix in range(1, shist.GetNbinsX()):
+                for iy in range(0,shist.GetNbinsY()):
+                    if shist.GetBinContent(ix,iy)==0:
+                        for iyy in range(iy, 0, -1):
+                            shist.SetBinContent(ix,iyy, shist.GetBinContent(ix,iy+1))
+                    else:
+                        break
+            
 
     for s in range(nSmooth):
         #shist.Smooth() # default smoothing algorithm
@@ -158,9 +190,13 @@ def extractSmoothedContourRL(hist, nSmooth=1):
     for ix in range(1,hist.GetNbinsX()+1):
         for iy in range(1,hist.GetNbinsY()+1):
             m1, m2 = hist.GetXaxis().GetBinLowEdge(ix), hist.GetYaxis().GetBinLowEdge(iy)
-            if m1-m2>=175:
+            #if m1-m2>=175:
+            #    hL.SetBinContent(ix,iy, 0)
+            #if m1-m2<=175:
+            #    hR.SetBinContent(ix,iy, 0)
+            if m1-m2>=150:
                 hL.SetBinContent(ix,iy, 0)
-            if m1-m2<=175:
+            if m1-m2<=200:
                 hR.SetBinContent(ix,iy, 0)
 
     # check if graph 0 makes sense, otherwise take graph 1
@@ -205,7 +241,9 @@ g2_lims_mu  = {} # TGraph2D limits in signal-strength, automatic interpolation
 
 m1min, m1max = 0, 2000
 m2min, m2max = 0, 2000
-binSize = 25
+xbinSize = 25
+#xbinSize = 25 if model!='T2cc' else 5
+ybinSize = 25 if model!='T2cc' else 5
 
 mass1 = "mGlu" if "T1" in model else "mSq" if model=="T2qq" else "mSb" if model=="T2bb" else "mSt" if model=="T2tt" else "m1"
 mass2 = "mLSP"
@@ -214,7 +252,7 @@ mass2 = "mLSP"
 for lim in limits:
     # uniform 25 GeV binning
     #h_lims_mu0[lim] = ROOT.TH2F(lim+"_mu0", model, (m1max-m1min+binSize)/binSize, m1min-binSize/2., m1max+binSize/2., (m2max-m2min+binSize)/binSize, m2min-binSize/2., m2max+binSize/2.)
-    h_lims_mu0[lim] = ROOT.TH2F(lim+"_mu0", model, (m1max-m1min+binSize)/binSize, m1min-binSize/2., m1max+binSize/2., (m2max-m2min+2*binSize)/(binSize), m2min-3*binSize/2., m2max+binSize/2.)
+    h_lims_mu0[lim] = ROOT.TH2F(lim+"_mu0", model, (m1max-m1min+xbinSize)/xbinSize, m1min-xbinSize/2., m1max+xbinSize/2., (m2max-m2min+2*ybinSize)/(ybinSize), m2min-3*ybinSize/2., m2max+ybinSize/2.)
     h_lims_mu0[lim].SetXTitle(mass1)    
     h_lims_mu0[lim].SetYTitle(mass2)
 
@@ -240,9 +278,11 @@ for lim in limits:
     fillHorizontalBelowZero(h_lims_mu0[lim])
     # interpolation done automatically by TGraph2D using Delaunay method
     g2_lims_mu[lim] = ROOT.TGraph2D(h_lims_mu0[lim])
-    binSize_inter = binSize/2. # bin size of interpolation graph (12.5 GeV as decided in dec7 meeting @ R40) 
-    g2_lims_mu[lim].SetNpx( int((g2_lims_mu[lim].GetXmax()-g2_lims_mu[lim].GetXmin())/binSize_inter) )
-    g2_lims_mu[lim].SetNpy( int((g2_lims_mu[lim].GetYmax()-g2_lims_mu[lim].GetYmin())/binSize_inter) )
+    xbinSize_inter = xbinSize/2.
+    #xbinSize_inter = xbinSize/2. if model!='T2cc' else ybinSize # bin size of interpolation graph (12.5 GeV as decided in dec7 meeting @ R40) 
+    ybinSize_inter = ybinSize/2. if model!='T2cc' else ybinSize # bin size of interpolation graph (12.5 GeV as decided in dec7 meeting @ R40) 
+    g2_lims_mu[lim].SetNpx( int((g2_lims_mu[lim].GetXmax()-g2_lims_mu[lim].GetXmin())/xbinSize_inter) )
+    g2_lims_mu[lim].SetNpy( int((g2_lims_mu[lim].GetYmax()-g2_lims_mu[lim].GetYmin())/ybinSize_inter) )
     h_lims_mu[lim] = g2_lims_mu[lim].GetHistogram()
     h_lims_mu[lim].SetName( h_lims_mu0[lim].GetName().replace("mu0","mu") )
              
@@ -260,9 +300,10 @@ for lim in limits:
 print "translating to x-sec and yes/no limits and saving 2d histos..."
 for lim in limits:
     #if model=="T2tt":
-    #    unexcludeDiagonal( h_lims_mu[lim] )
+    #    unexcludeDiagonal( h_lims_mu[lim])
     #if model=="T2bb":  # do this for summary plot as per FKW request
     #    unexcludeDiagonal( h_lims_mu[lim],25 )    
+    #    unexcludeDiagonal( h_lims_mu[lim],37.5 )    
     
     h_lims_yn[lim] = getLimitYN ( h_lims_mu[lim] )
     h_lims_xs[lim] = getLimitXS ( h_lims_mu[lim], h_xs )
@@ -289,7 +330,7 @@ for lim in limits:
         graphs.append((n_points,gr))
     graphs.sort(reverse=True)
     graphs0[lim] = graphs[0][1]
-    if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+    if model=='T2tt' and (lim=='ep2s'): # two unconnected contours are obtained for these two guys
         graphs0[lim]=mergeGraphs([graphs[0][1],graphs[1][1]])
     graphs0[lim].SetName("gr_"+lim)
     graphs0[lim].Write()
@@ -301,7 +342,7 @@ for lim in limits:
     if model!="T2tt" or not divideTopDiagonal:
         graphs = extractSmoothedContour(h_lims_mu[lim], nSmooth)
         graphs1[lim]=graphs[0]
-        if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+        if model=='T2tt' and (lim=='ep2s'): # two unconnected contours are obtained for these two guys
             graphs1[lim]=mergeGraphs(graphs)
     else:
         graphs = extractSmoothedContourRL(h_lims_mu[lim], nSmooth)
@@ -322,9 +363,9 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 100 if model=="T2tt" else 300 if model=="T2bb" else 400 if model=="T2qq" else 0
-    xmax = 1000 if model=="T2tt" or model=="T2bb" else 1500 if model=="T2qq" else 2000
-    ymax = 600  if model=="T2tt" else 800 if model=="T2bb" else 1000 if model=="T2qq" else 1500
+    xmin = 600 if "T1" in model else 100 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
+    xmax = 1000 if model=="T2tt" or model=="T2bb" else 1500 if model=="T2qq" else 800 if model=='T2cc' else 2000
+    ymax = 600  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1000 if model=="T2qq" else 1500
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_lims_yn0[lim].Draw("colz")
