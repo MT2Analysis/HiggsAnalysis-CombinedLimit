@@ -4,13 +4,13 @@
 
 Model=($1)
 
-homeDir='/scratch/mmasciov/'
+homeDir=/scratch/`whoami`/
 inputDir=$homeDir'datacards_'${Model[0]}'/'
 
 thisDir=$PWD
 copyDir=$thisDir'/ranking_'${Model[0]}'/'
 
-workDir='/scratch/mmasciov/ranking_'${Model[0]}'/'
+workDir=/scratch/`whoami`/ranking_${Model[0]}'/'
 
 mkdir -p $workDir
 cd $workDir
@@ -61,3 +61,5 @@ do
      c=$(( $c + 1 ))
 done
 unset Model
+
+cd -

@@ -47,7 +47,7 @@ limits=sorted(a.items(), key=operator.itemgetter(1))
 ##for l in limits:
 ##    output.write(str(a[l])+' & '+str(l)+'\\\\\n')
 for l in limits:
-    output.write(str(l[0])+' & '+str(l[1])+' & '+str(c[l[0]]) + ' & ' + str(b[l[0]]) + ' & ' + ('%.3f' % (float(b[l[0]])/(xsec*2263.55)*100.)) +'\\\\\n')
+    output.write(str(l[0])+' & '+str(l[1])+' & '+str(c[l[0]]) + ' & ' + str(b[l[0]]) + ' & ' + ('%.3f' % (float(b[l[0]])/(xsec*1000)*100.)) +'\\\\\n') # acceptance assumes 1/fb, will be corrected in makeRankingTables
 
 
 
