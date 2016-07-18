@@ -1,0 +1,15 @@
+1. take the template datacards
+2. modify placeholders:
+sed -i 's/XXX/1.0/g' *
+sed -i 's/UUU/1.0/g' *
+sed -i 's/III/1.0/g' *
+sed -i 's/HHH/1.0/g' *
+sed -i 's/LLL/1.0/g' *
+
+3. combine HT regions:
+python combineCards_forNuisances_oneHTregion.py
+
+4. run combine maximumlikelihood method and rename:
+combine -M MaxLikelihoodFit datacard_HT1500toInf.root --saveShapes --saveWithUncertainties
+mv mlfit.root mlfit_ExtremeHT.root
+
