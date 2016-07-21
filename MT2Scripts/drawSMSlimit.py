@@ -24,6 +24,8 @@ for m in models:
     if m in INPUT:
         model = m
 
+print "model =", model
+
 xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "SUSYCrossSections13TeVsquarkantisquark.root" if model=="T2qq" else "theXSfile.root"
 f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
 h_xs = f_xs.Get("xs")
@@ -63,14 +65,14 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
         m2        = float(line.split()[1])
         for lim,index in fileMap.iteritems():
             rlim[lim]  = float(line.split()[index])
-    
+
         # get xs for the given mass
         xs  = h_xs.GetBinContent(h_xs.FindBin(m1))
         exs = h_xs.GetBinError  (h_xs.FindBin(m1))
 
         if model == "T2qq":  # mu of T2qq already normilized by 8/10 (8-fold)
             xs, exs = xs*0.8, exs*0.8
-    
+
         rlim['op1s'] = rlim['obs'] * xs / (xs+exs)
         rlim['om1s'] = rlim['obs'] * xs / (xs-exs)
     
@@ -84,6 +86,7 @@ def readLimitsFromFile(INPUT, fileMap, h_lims_mu0, h_lims_xs0, h_lims_yn0):
             h_lims_mu0[lim].SetBinContent(binX, binY, rlim[lim])
             h_lims_xs0[lim].SetBinContent(binX, binY, rlim[lim]*xs)
             h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]<1 else 1e-3)
+
 
 def interpolateDiagonal(hist):
     # interpolate in diagonal direction to fill remaining missing holes
@@ -330,8 +333,10 @@ for lim in limits:
         graphs.append((n_points,gr))
     graphs.sort(reverse=True)
     graphs0[lim] = graphs[0][1]
-    if model=='T2tt' and (lim=='ep2s'): # two unconnected contours are obtained for these two guys
-        graphs0[lim]=mergeGraphs([graphs[0][1],graphs[1][1]])
+    #if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+    #if model=='T2tt' and (lim=='ep2s' or lim=='ep1s' or lim=='exp'): # two unconnected contours are obtained for these two guys
+#    if model=='T2tt' and (lim=='ep2s' or lim=='ep1s' or lim=='op1s' or lim=='om1s' or lim=='em1s' or lim=='exp'  or lim=='obs'): # two unconnected contours are obtained for these two guys
+#        graphs0[lim]=mergeGraphs([graphs[0][1],graphs[1][1]])
     graphs0[lim].SetName("gr_"+lim)
     graphs0[lim].Write()
     
@@ -342,7 +347,9 @@ for lim in limits:
     if model!="T2tt" or not divideTopDiagonal:
         graphs = extractSmoothedContour(h_lims_mu[lim], nSmooth)
         graphs1[lim]=graphs[0]
-        if model=='T2tt' and (lim=='ep2s'): # two unconnected contours are obtained for these two guys
+        #if model=='T2tt' and (lim=='ep2s' or lim=='ep1s'): # two unconnected contours are obtained for these two guys
+        #if model=='T2tt' and (lim=='ep2s' or lim=='ep1s' or lim=='exp'): # two unconnected contours are obtained for these two guys
+        if model=='T2tt' and (lim=='ep2s' or lim=='om1s' or lim=='exp'  or lim=='ep1s'): # two unconnected contours are obtained for these two guys
             graphs1[lim]=mergeGraphs(graphs)
     else:
         graphs = extractSmoothedContourRL(h_lims_mu[lim], nSmooth)
@@ -363,8 +370,8 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 100 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
-    xmax = 1000 if model=="T2tt" or model=="T2bb" else 1500 if model=="T2qq" else 800 if model=='T2cc' else 2000
+    xmin = 600 if "T1" in model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
+    xmax = 1000 if model=="T2tt" else 1500 if model=="T2qq" or model=="T2bb" else 800 if model=='T2cc' else 2000
     ymax = 600  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1000 if model=="T2qq" else 1500
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
