@@ -7,13 +7,13 @@ Model=$1
 Label=$2
 #Model='T1tttt'
 
-for i in $(ls /scratch/mmasciov/limits_${Model}_${Label}/*txt)
+for i in $(ls /scratch/casal/limits_${Model}_${Label}/*txt)
 do
     if [[ $i ]]
     then
 	#echo $i
 	mass=${i##*log_${Model}_}
-	mass=${mass%_2p3ifb.txt*}
+	mass=${mass%_combined.txt*}
 	echo $mass
 	limit=$(grep "50.0%" $i | awk '{print $5}')
 	limit_ps=$(grep "84.0%" $i | awk '{print $5}')
