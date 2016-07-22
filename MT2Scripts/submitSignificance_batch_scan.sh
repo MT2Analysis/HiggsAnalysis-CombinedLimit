@@ -10,7 +10,7 @@ MYPATH=$2
 M1=$3
 M2=$4
 
-SEPath="${MYPATH}/datacards_${M1}_${M2}/"
+MYCARD="${MYPATH}/datacard_${MODEL}_${M1}_${M2}_combined.txt"
 
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
@@ -23,25 +23,21 @@ cd /mnt/t3nfs01/data01/shome/casal/CMSSW_7_1_5_combine/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
-JOBDIR=/scratch/`whoami`/datacardCombination_${JOB_ID}/
+JOBDIR=/scratch/`whoami`/significanceCalculation_${JOB_ID}/
 
 mkdir -p ${JOBDIR}
-mkdir -p ${JOBDIR}/datacards_${MODEL}/
 
-echo $SEPath
+echo $MYCARD
 
 cd ${JOBDIR}
 
-for i in $(ls ${SEPath}/*txt)
-do
+echo "card ${MYCARD}"
+command=`dccp dcap://t3se01.psi.ch:22125/${MYCARD} ${JOBDIR}/`
+echo ${command}
 
-    echo "Copying ${i}"
-    command=`dccp dcap://t3se01.psi.ch:22125/${i} ${JOBDIR}/`
-    echo ${command}
+command=`combine -M ProfileLikelihood --significance datacard_${MODEL}_${M1}_${M2}_combined.txt -n ${MODEL}_${M1}_${M2} --rMin -5 --uncapped 1 >& log_${MODEL}_${M1}_${M2}_combined.txt`
+echo $command
 
-done
-
-combineCards.py -S ${JOBDIR}/datacard_*txt > ${JOBDIR}/datacards_${MODEL}/datacard_${MODEL}_${M1}_${M2}_combined.txt
-xrdcp -v ${JOBDIR}/datacards_${MODEL}/datacard_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/datacard_${MODEL}_${M1}_${M2}_combined.txt
+xrdcp -v log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/significance/log_${MODEL}_${M1}_${M2}_combined.txt
 
 rm -rf $JOBDIR
