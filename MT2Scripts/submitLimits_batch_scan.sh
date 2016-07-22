@@ -23,7 +23,7 @@ cd /mnt/t3nfs01/data01/shome/casal/CMSSW_7_1_5_combine/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
-JOBDIR=/scratch/casal/limitCalculation_${JOB_ID}/
+JOBDIR=/scratch/`whoami`/limitCalculation_${JOB_ID}/
 
 mkdir -p ${JOBDIR}
 
