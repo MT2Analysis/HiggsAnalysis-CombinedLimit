@@ -371,8 +371,8 @@ if( not os.path.isdir(plotsDir) ):
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
     xmin = 600 if "T1" in model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
-    xmax = 1000 if model=="T2tt" else 1500 if model=="T2qq" or model=="T2bb" else 800 if model=='T2cc' else 2000
-    ymax = 600  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1000 if model=="T2qq" else 1500
+    xmax = 1200 if model=="T2tt"  or model=="T2bb" else 1600 if model=="T2qq" else 800 if model=='T2cc' else 2100 if model=="T1bbbb" else 2000
+    ymax = 700  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1200 if model=="T2qq" else 1800
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_lims_yn0[lim].Draw("colz")
