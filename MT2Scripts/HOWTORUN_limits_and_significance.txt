@@ -1,0 +1,32 @@
+###
+Once all single datacards have been created using createDatacards:
+
+1. need to combine cards for each model/mass point:
+python combineCards_scan.py pathOnSE (see inside the script for an example)
+
+2. need to run limits:
+python submitLimits_scan.py pathOnSE (see inside the script for an example)
+
+3. need to run significance:
+python submitSignificance_scan.py pathOnSE (see inside the script for an example)
+
+###
+Once jobs are finished, can copy limits/significance on your scratch are, then read:
+
+4. copy limits/significance
+sh copyLimits.sh model label SEPath (see inside the script for an example)
+sh copySignificance.sh model label SEPath (see inside the script for an example)
+
+5. read limits/significance
+sh readAsymptoticLimits_Scan.sh model label
+sh readPLSignificance_Scan.sh model label
+
+###
+
+This will create a txt file for limits, and a txt file for significance, one per model.
+Once you got this, then you need to convert the txt file in a root file, running interpolation and smoothing:
+
+6. run the python script:
+python drawSMSLimit.py fileWithLimits.txt
+
+### Note: for significance, keep the txt file. Bruno and Mario to work on similar script for interpolation...
