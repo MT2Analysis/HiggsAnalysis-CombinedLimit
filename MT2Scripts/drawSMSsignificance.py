@@ -5,7 +5,7 @@ from sys import argv,exit
 from optparse import OptionParser
 import ROOT
 
-print "runing:", argv
+print "running:", argv
 
 if len(argv)<2:
     print "Usage: "+argv[0]+" fileWithSignificance.txt"
@@ -17,7 +17,7 @@ INPUT = argv[1]
 divideTopDiagonal = False
 
 
-models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt","T2cc"]
+models   = ["T1bbbb","T1tttt","T1qqqq","T2qq","T2bb","T2tt","T2cc"]
 model = "mymodel"
 for m in models:
     if m in INPUT:
@@ -47,7 +47,10 @@ def getSig ( h_pvalue ):
         m = h_sig.GetXaxis().GetBinCenter(ix)
         for iy in range(1,h_sig.GetNbinsY()+1):
             r = h_sig.GetBinContent(ix,iy)
-            sig  = ROOT.TMath.NormQuantile(1-(h_sig.GetBinContent(r))
+            if r==0:
+                sig=-99.
+            else:
+                sig  = ROOT.TMath.NormQuantile(1-r)
             h_sig.SetBinContent(ix, iy, sig)
     return h_sig
     
@@ -69,7 +72,7 @@ def readPvaluesFromFile(INPUT, fileMap, h_pvalue0, h_sig0, h_sig_yn0):
         for lim in pvalues:
             h_pvalue0[lim].SetBinContent(binX, binY, rlim[lim])
             h_sig0[lim].SetBinContent(binX, binY, ROOT.TMath.NormQuantile(1-(rlim[lim])))
-            h_lims_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]>0.5 else 1e-3)
+            h_sig_yn0[lim].SetBinContent(binX, binY, 1 if rlim[lim]>0.5 else 1e-3)
 
 
 def interpolateDiagonal(hist):
@@ -134,7 +137,7 @@ for lim in pvalues:
 
 # read txt file with limits (map defined above)
 print "reading file..."
-readLimitsFromFile(INPUT, fileMap, h_pvalue0, h_sig0, h_sig_yn0)
+readPvaluesFromFile(INPUT, fileMap, h_pvalue0, h_sig0, h_sig_yn0)
 
 # so graph goes below mLSP=0 and there is no cut off above zero
 def fillHorizontalBelowZero(hist):
