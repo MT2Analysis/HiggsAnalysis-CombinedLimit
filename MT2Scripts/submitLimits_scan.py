@@ -1,3 +1,5 @@
+# python submitLimits_scan.py <path> <model>
+
 import os
 import sys
 import commands
@@ -38,7 +40,6 @@ for f in listdir(mypath):
         print "file exists... skiping:",logfile
         continue
 
-    command="qsub -q short.q -o /dev/null -e /dev/null -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+model+" "+mypath+" "+str(m1)+" "+str(m2)
+    command="qsub -q short.q -o /dev/null -e /dev/null -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     print command
     os.system(command)
-
