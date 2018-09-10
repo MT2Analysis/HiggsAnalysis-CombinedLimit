@@ -7,7 +7,7 @@ Model=$1
 Label=$2
 #Model='T1tttt'
 
-for i in $(ls /scratch/casal/limits_${Model}_${Label}/*txt)
+for i in $(ls /scratch/$USER/limits_${Model}_${Label}/*txt)
 do
     if [[ $i ]]
     then
