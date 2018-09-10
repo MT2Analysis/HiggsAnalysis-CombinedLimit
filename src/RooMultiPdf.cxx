@@ -10,7 +10,7 @@
 #include "Riostream.h"
 #include <math.h>
 
-#include "../interface/RooMultiPdf.h"
+#include "HiggsAnalysis/CombinedLimit/interface/RooMultiPdf.h"
 #include "RooRealVar.h"
 #include "RooAddPdf.h"
 #include <stdexcept>
@@ -76,6 +76,10 @@ void RooMultiPdf::setCorrectionFactor(PenatlyScheme penal){
   } else if ( penal==PVAL ){
 	cFactor=0.5;
   }
+}
+//_____________________________________________________________________________
+void RooMultiPdf::setCorrectionFactor(double penal){
+  cFactor=penal;
 }
 //_____________________________________________________________________________
 double RooMultiPdf::getCorrection() const {

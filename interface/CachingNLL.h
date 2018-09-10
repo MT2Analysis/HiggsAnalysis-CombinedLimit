@@ -13,8 +13,10 @@
 #include <RooRealVar.h>
 #include <RooSimultaneous.h>
 #include <RooGaussian.h>
+#include <RooPoisson.h>
 #include <RooProduct.h>
-#include "../interface/SimpleGaussianConstraint.h"
+#include "HiggsAnalysis/CombinedLimit/interface/SimpleGaussianConstraint.h"
+#include "HiggsAnalysis/CombinedLimit/interface/SimplePoissonConstraint.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 
 class RooMultiPdf;
@@ -45,6 +47,7 @@ namespace cacheutils {
             // and it will be up to the caller code to fill the room the new item
             std::pair<std::vector<Double_t> *, bool> get(); 
             void clear();
+            inline void setDirectMode(bool mode) { directMode_ = mode; }
         private:
             struct Item {
                 Item(const RooAbsCollection &set)   : checker(set),   good(false) {}
@@ -56,6 +59,7 @@ namespace cacheutils {
             int size_, maxSize_;
             enum { MaxItems_ = 3 };
             Item *items[MaxItems_];
+            bool directMode_;
     };
 // Part one: cache all values of a pdf
 class CachingPdfBase {
@@ -65,6 +69,7 @@ class CachingPdfBase {
         virtual const std::vector<Double_t> & eval(const RooAbsData &data) = 0;
         virtual const RooAbsReal *pdf() const = 0;
         virtual void  setDataDirty() = 0;
+        virtual void  setIncludeZeroWeights(bool includeZeroWeights) = 0;
 };
 class CachingPdf : public CachingPdfBase {
     public:
@@ -74,6 +79,7 @@ class CachingPdf : public CachingPdfBase {
         virtual const std::vector<Double_t> & eval(const RooAbsData &data) ;
         const RooAbsReal *pdf() const { return pdf_; }
         virtual void  setDataDirty() { lastData_ = 0; }
+        virtual void  setIncludeZeroWeights(bool includeZeroWeights) { includeZeroWeights_ = includeZeroWeights;  setDataDirty(); }
     protected:
         const RooArgSet *obs_;
         RooAbsReal *pdfOriginal_;
@@ -83,6 +89,7 @@ class CachingPdf : public CachingPdfBase {
         ValuesCache cache_;
         std::vector<uint8_t> nonZeroW_;
         unsigned int         nonZeroWEntries_;
+        bool                 includeZeroWeights_;
         virtual void newData_(const RooAbsData &data) ;
         virtual void realFill_(const RooAbsData &data, std::vector<Double_t> &values) ;
 };
@@ -105,7 +112,7 @@ CachingPdfBase * makeCachingPdf(RooAbsReal *pdf, const RooArgSet *obs) ;
 
 class CachingAddNLL : public RooAbsReal {
     public:
-        CachingAddNLL(const char *name, const char *title, RooAbsPdf *pdf, RooAbsData *data) ;
+        CachingAddNLL(const char *name, const char *title, RooAbsPdf *pdf, RooAbsData *data, bool includeZeroWeights = false) ;
         CachingAddNLL(const CachingAddNLL &other, const char *name = 0) ;
         virtual ~CachingAddNLL() ;
         virtual CachingAddNLL *clone(const char *name = 0) const ;
@@ -117,8 +124,14 @@ class CachingAddNLL : public RooAbsReal {
         virtual RooArgSet* getParameters(const RooArgSet* depList, Bool_t stripDisconnected = kTRUE) const ;
         double  sumWeights() const { return sumWeights_; }
         const RooAbsPdf *pdf() const { return pdf_; }
-        void setZeroPoint() { zeroPoint_ = -this->getVal(); setValueDirty(); }
-        void clearZeroPoint() { zeroPoint_ = 0.0; setValueDirty();  }
+        void setZeroPoint() ;
+        void clearZeroPoint() ;
+        void clearConstantZeroPoint() ;
+        void updateZeroPoint() { clearZeroPoint(); setZeroPoint(); }
+        void propagateData();
+        void setAnalyticBarlowBeeston(bool flag);
+        /// note: setIncludeZeroWeights(true) won't have effect unless you also re-call setData
+        virtual void  setIncludeZeroWeights(bool includeZeroWeights) ;
         RooSetProxy & params() { return params_; }
     private:
         void setup_();
@@ -126,8 +139,9 @@ class CachingAddNLL : public RooAbsReal {
         RooAbsPdf *pdf_;
         RooSetProxy params_;
         const RooAbsData *data_;
-        std::vector<Double_t>  weights_;
+        std::vector<Double_t>  weights_, binWidths_;
         double               sumWeights_;
+        bool includeZeroWeights_;
         mutable std::vector<RooAbsReal*> coeffs_;
         mutable boost::ptr_vector<CachingPdfBase>  pdfs_;
         mutable boost::ptr_vector<RooAbsReal>  prods_;
@@ -136,7 +150,9 @@ class CachingAddNLL : public RooAbsReal {
         mutable std::vector<Double_t> partialSum_;
         mutable std::vector<Double_t> workingArea_;
         mutable bool isRooRealSum_, fastExit_;
-        double zeroPoint_;
+        mutable int canBasicIntegrals_, basicIntegrals_;
+        double zeroPoint_; 
+        double constantZeroPoint_; // this is arbitrary and kept constant for all the lifetime of the PDF
 };
 
 class CachingSimNLL  : public RooAbsReal {
@@ -155,8 +171,14 @@ class CachingSimNLL  : public RooAbsReal {
         static void setNoDeepLogEvalError(bool noDeep) { noDeepLEE_ = noDeep; }
         void setZeroPoint() ; 
         void clearZeroPoint() ;
+        void clearConstantZeroPoint() ;
+        void updateZeroPoint() { clearZeroPoint(); setZeroPoint(); }
         static void forceUnoptimizedConstraints() { optimizeContraints_ = false; }
+        void setChannelMasks(RooArgList const& args);
+        void setAnalyticBarlowBeeston(bool flag);
         friend class CachingAddNLL;
+        // trap this call, since we don't care about propagating it to the sub-components
+        virtual void constOptimizeTestStatistic(ConstOpCode opcode, Bool_t doAlsoTrackingOpt=kTRUE) { }
     private:
         void setup_();
         RooSimultaneous   *pdfOriginal_;
@@ -168,6 +190,8 @@ class CachingSimNLL  : public RooAbsReal {
         std::vector<RooAbsPdf *>        constrainPdfs_;
         std::vector<SimpleGaussianConstraint *>  constrainPdfsFast_;
         std::vector<bool>                        constrainPdfsFastOwned_;
+        std::vector<SimplePoissonConstraint *>   constrainPdfsFastPoisson_;
+        std::vector<bool>                        constrainPdfsFastPoissonOwned_;
         std::vector<CachingAddNLL*>     pdfs_;
         std::auto_ptr<TList>            dataSets_;
         std::vector<RooDataSet *>       datasets_;
@@ -176,6 +200,8 @@ class CachingSimNLL  : public RooAbsReal {
         static bool optimizeContraints_;
         std::vector<double> constrainZeroPoints_;
         std::vector<double> constrainZeroPointsFast_;
+        std::vector<double> constrainZeroPointsFastPoisson_;
+        std::vector<RooAbsReal*> channelMasks_;
 };
 
 }

@@ -1,5 +1,5 @@
-#include "../interface/GenerateOnly.h"
-#include "../interface/Combine.h"
+#include "HiggsAnalysis/CombinedLimit/interface/GenerateOnly.h"
+#include "HiggsAnalysis/CombinedLimit/interface/Combine.h"
 #include <iostream>
 
 using namespace RooStats;
@@ -15,5 +15,7 @@ bool GenerateOnly::run(RooWorkspace *w, RooStats::ModelConfig *mc_s, RooStats::M
   if (verbose > 0) {
     std::cout << "generate toy samples only; no limit computation " << std::endl;
   }
+  // Kill the Fill since there is nothing to do 
+  Combine::toggleGlobalFillTree(false);
   return true;
 }

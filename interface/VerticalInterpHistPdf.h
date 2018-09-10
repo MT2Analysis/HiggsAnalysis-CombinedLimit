@@ -8,8 +8,8 @@
 #include "RooRealProxy.h"
 #include "RooListProxy.h"
 #include "TH1.h"
-#include "../interface/SimpleCacheSentry.h"
-#include "../interface/FastTemplate.h"
+#include "HiggsAnalysis/CombinedLimit/interface/SimpleCacheSentry.h"
+#include "HiggsAnalysis/CombinedLimit/interface/FastTemplate_Old.h"
 #include <cmath>
 
 class FastVerticalInterpHistPdf;
@@ -114,9 +114,9 @@ protected:
 
   // return a smooth function that is equal to +/-1 for |x| >= smoothRegion_ and it's null in zero
   inline double smoothStepFunc(double x) const { 
-    if (fabs(x) >= _smoothRegion) return x > 0 ? +1 : -1;
+    if (fabs(x) >= _smoothRegion) return x > 0. ? +1. : -1.;
     double xnorm = x/_smoothRegion, xnorm2 = xnorm*xnorm;
-    return 0.125 * xnorm * (xnorm2 * (3.*xnorm2 - 10.) + 15);
+    return 0.125 * xnorm * (xnorm2 * (3.*xnorm2 - 10.) + 15.);
   }
 
 private:
@@ -167,7 +167,7 @@ private:
 
 class FastVerticalInterpHistPdfV {
     public: 
-        FastVerticalInterpHistPdfV(const FastVerticalInterpHistPdf &, const RooAbsData &data) ;
+        FastVerticalInterpHistPdfV(const FastVerticalInterpHistPdf &, const RooAbsData &data, bool includeZeroWeights=false) ;
         void fill(std::vector<Double_t> &out) const ;
     private:
         const FastVerticalInterpHistPdf & hpdf_;
@@ -248,6 +248,7 @@ public:
 
   virtual void setActiveBins(unsigned int bins) {}
 
+  bool cacheIsGood() const { return _sentry.good() && _initBase; }
   /// Must be public, for serialization
   typedef FastVerticalInterpHistPdfBase::Morph Morph;
 protected:
@@ -310,6 +311,8 @@ public:
   virtual void setActiveBins(unsigned int bins) ;
   Double_t evaluate() const ;
 
+  FastHisto const& cache() const { return _cache; }
+
   friend class FastVerticalInterpHistPdf2V;
 protected:
   RooRealProxy   _x;
@@ -330,7 +333,7 @@ private:
 };
 class FastVerticalInterpHistPdf2V {
     public: 
-        FastVerticalInterpHistPdf2V(const FastVerticalInterpHistPdf2 &, const RooAbsData &data) ;
+        FastVerticalInterpHistPdf2V(const FastVerticalInterpHistPdf2 &, const RooAbsData &data, bool includeZeroWeights=false) ;
         void fill(std::vector<Double_t> &out) const ;
     private:
         const FastVerticalInterpHistPdf2 & hpdf_;
@@ -362,6 +365,9 @@ public:
   const RooRealVar & x() const { return dynamic_cast<const RooRealVar &>(_x.arg()); }
   const RooRealVar & y() const { return dynamic_cast<const RooRealVar &>(_y.arg()); }
   Bool_t conditional() const { return _conditional; }
+
+  Int_t getMaxVal(const RooArgSet& vars) const ;
+  Double_t maxVal(Int_t code) const ;
 
   Double_t evaluate() const ;
 protected:

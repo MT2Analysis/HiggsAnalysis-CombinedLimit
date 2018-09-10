@@ -1,5 +1,5 @@
-#include "../interface/CombDataSetFactory.h"
-#include "../interface/utils.h"
+#include "HiggsAnalysis/CombinedLimit/interface/CombDataSetFactory.h"
+#include "HiggsAnalysis/CombinedLimit/interface/utils.h"
 
 #include <cmath>
 
@@ -27,6 +27,7 @@ void CombDataSetFactory::addSetAny(const char *label, RooDataHist *set) {
 
 
 void CombDataSetFactory::addSetAny(const char *label, RooDataSet *set) {
+    if (set->isWeighted() && weight_ == 0) weight_ = new RooRealVar("_weight_","",1);
     mapUB_[label] = set;
 }
 
