@@ -19,6 +19,9 @@ if len(sys.argv)>2:
 else:
   models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
 
+logsDir="jobs_{}/".format(model)
+os.system("mkdir {}".format(logsDir))
+
 for m in models:
   #if m in mypath:
   model = m
@@ -46,6 +49,8 @@ for m in models:
           print "file exists... skiping:",combfile
           continue
 
-    command="qsub -q short.q -o /dev/null -e /dev/null -N combineCards_"+model+"_"+str(m1)+"_"+str(m2)+" combineCards_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".out"
+    err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
+    command="qsub -q short.q -o "+out+" -e "+err+" -N combineCards_"+model+"_"+str(m1)+"_"+str(m2)+" combineCards_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     print command
     os.system(command)
