@@ -1,7 +1,7 @@
 # Script to combine the data cards into a single data card for a given mass mass point of a model
 # accesses the tar , untars , produces final data card , copies output to the input directory
 # example:
-# qsub -l h_vmem=6g -q short.q -o $PWD/test.out -e $PWD/test.err -N test combineCards_batch_scan.sh /pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_dataETH_SnTMC_35p9ifb//datacards_T2qq_FUCKYOUVERYMUCH/ T2qq 400 200
+# qsub -l h_vmem=6g -q short.q -o $PWD/test.out -e $PWD/test.err -N test combineCards_batch_scan.sh /pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_dataETH_SnTMC_35p9ifb//datacards_T2qq_ciao/ T2qq 400 200
 
 
 o $#;
@@ -27,7 +27,8 @@ export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_L
 
 echo "Loading CMSSW 80X"
 #cd /mnt/t3nfs01/data01/shome/casal/CMSSW_7_1_5_combine/src/
-cd /shome/mratti/combine_workarea/CMSSW_8_1_0/src/
+#cd /shome/mratti/combine_workarea/CMSSW_8_1_0/src/
+cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
