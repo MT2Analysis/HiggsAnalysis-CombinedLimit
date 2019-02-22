@@ -5,6 +5,8 @@ from sys import argv,exit
 from optparse import OptionParser
 import ROOT
 
+ROOT.gROOT.SetBatch(True)
+
 print "runing:", argv
 
 if len(argv)<2:
@@ -242,8 +244,8 @@ h_lims_yn   = {} # limits in excluded/non-exluded, interpolated
 h_lims_xs   = {} # limits in cross-section, interpolated
 g2_lims_mu  = {} # TGraph2D limits in signal-strength, automatic interpolation
 
-m1min, m1max = 0, 2000
-m2min, m2max = 0, 2000
+m1min, m1max = 0, 3000
+m2min, m2max = 0, 3000
 xbinSize = 25
 #xbinSize = 25 if model!='T2cc' else 5
 ybinSize = 25 if model!='T2cc' else 5
@@ -371,8 +373,9 @@ if( not os.path.isdir(plotsDir) ):
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
     xmin = 600 if "T1" in model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
-    xmax = 1200 if model=="T2tt"  or model=="T2bb" else 1600 if model=="T2qq" else 800 if model=='T2cc' else 2100 if model=="T1bbbb" else 2000
-    ymax = 700  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1200 if model=="T2qq" else 1800
+    xmax = 1200 if model=="T2tt"  or model=="T2bb" else 1600 if model=="T2qq" else 800 if model=='T2cc' else 2100 if model=="T1bbbb" else 2400
+    ymax = 700  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1200 if model=="T2qq" else 2000
+    print "xmin={} xmax={} ymax={}".format(xmin, xmax, ymax)
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_lims_yn0[lim].Draw("colz")
