@@ -19,12 +19,13 @@ if len(sys.argv)>2:
 else:
   models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
 
-logsDir="jobs_{}/".format(model)
-os.system("mkdir {}".format(logsDir))
 
 for m in models:
   #if m in mypath:
   model = m
+
+  logsDir="{}/jobs_{}/".format(os.getcwd(),model)
+  os.system("mkdir {}".format(logsDir))
 
   for d in listdir(mypath):
     # format must be tared_1525_350.tar.gz
