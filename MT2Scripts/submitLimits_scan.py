@@ -30,6 +30,14 @@ for f in listdir(mypath):
     if ".txt" not in f:
         continue
 
+    if "datacard" not in f:
+        continue
+
+    #print f
+    #if os.stat(f).st_size == 0:
+    #    print "Combined data-card ", f, " is empty, skipping limit calculation"
+    #    continue
+
     print f
     #model=f.split("_")[1]
     m1   =f.split("_")[2]
@@ -37,15 +45,23 @@ for f in listdir(mypath):
 
     print model, m1, m2
 
+    # temporary PATCH
+    #if int(m1) < 1400: 
+    #  print 'Only submitting jobs with mass above 1400, will skip this point', m1, m2
+    #  continue
+
     # check if file exists and is non-empty
-    #logfile = mypath+"/limits/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
-    #if ( os.path.isfile(logfile) ):
-    #    print "file exists... skiping:",logfile
-    #    continue
+    logfile = mypath+"/limits/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
+    if ( os.path.isfile(logfile) ):
+        print "file exists... skipping:",logfile
+        continue
 
     out = logsDir+"log_"+str(m1)+"_"+str(m2)+".out"
     err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
 
-    command="qsub -q short.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    #command="qsub -q long.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    command="qsub -q all.q -l h_vmem=4G -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    #command="qsub -q all.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    #command="qsub -q short.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     print command
     os.system(command)

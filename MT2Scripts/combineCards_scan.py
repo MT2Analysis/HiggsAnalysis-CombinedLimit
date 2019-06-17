@@ -29,6 +29,9 @@ for m in models:
 
   for d in listdir(mypath):
     # format must be tared_1525_350.tar.gz
+    #if 'limits' in d: continue
+    if 'tared_' not in d: continue
+    if 'tar.gz' not in d: continue
 
     print 'Working on ', d
     els=re.split('_|\.', d)

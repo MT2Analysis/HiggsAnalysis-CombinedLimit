@@ -28,9 +28,10 @@ for m in models:
 
 print "model =", model
 
-xsfile = "SUSYCrossSections13TeVgluglu.root" if "T1" in model else "SUSYCrossSections13TeVstopstop.root" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "SUSYCrossSections13TeVsquarkantisquark.root" if model=="T2qq" else "theXSfile.root"
-f_xs = ROOT.TFile("/shome/casal/SUSxsecs/"+xsfile)
-h_xs = f_xs.Get("xs")
+xsfile = "gluino.root" if "T1" in model else "stop.root" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "squark.root" if model=="T2qq" else "theXSfile.root"
+f_xs = ROOT.TFile("/shome/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"+xsfile)
+hname = "gluglu" if "T1" in model else "thirdGen" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "sqsq" if model=="T2qq" else "xs"
+h_xs = f_xs.Get(hname)
 
 limits = ["obs", "exp", "ep1s", "em1s", "ep2s", "em2s", "op1s", "om1s"]
 #limits = ["obs", "exp"]
@@ -372,9 +373,9 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in limits:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
-    xmax = 1200 if model=="T2tt"  or model=="T2bb" else 1600 if model=="T2qq" else 800 if model=='T2cc' else 2100 if model=="T1bbbb" else 2400
-    ymax = 700  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1200 if model=="T2qq" else 2000
+    xmin = 600 if ("T1qqqq" == model or "T1tttt" == model) else 800 if "T1bbbb" == model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 550 if model=="T2qq" else 0
+    xmax = 1500 if (model=="T2tt" or model=="T2bb") else 2000 if model=="T2qq" else 800 if model=="T2cc" else 2500 if model=="T1bbbb" else 2400
+    ymax = 700 if model=="T2tt" else 1200 if model=="T2bb" or model=="T2cc" else 1600 if model=="T2qq" else 2000 if (model=="T1qqqq" or model=="T1tttt") else 2200 if model=="T1bbbb" else 2000
     print "xmin={} xmax={} ymax={}".format(xmin, xmax, ymax)
     h_lims_yn0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_lims_yn0[lim].GetYaxis().SetRangeUser(0   , ymax)
