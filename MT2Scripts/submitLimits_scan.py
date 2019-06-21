@@ -20,18 +20,23 @@ else:
 
 command = "gfal-mkdir -p srm://t3se01.psi.ch/"+mypath+"limits/"
 os.system(command)
-  
-logsDir="{}/lim_{}/".format(os.getcwd(),model)
+
+version = mypath.split('{}_'.format(model))[1]
+ 
+logsDir="{}/lim_{}_{}/".format(os.getcwd(),model,version)
 os.system("mkdir {}".format(logsDir))
 
 
 for f in listdir(mypath):
 
     if ".txt" not in f:
-        continue
+      continue
 
     if "datacard" not in f:
-        continue
+      continue
+
+    if "datacard_T1bbb_" in f:
+      continue
 
     #print f
     #if os.stat(f).st_size == 0:
@@ -60,7 +65,7 @@ for f in listdir(mypath):
     err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
 
     #command="qsub -q long.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
-    command="qsub -q all.q -l h_vmem=4G -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    command="qsub -q all.q -l h_vmem=6G -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     #command="qsub -q all.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     #command="qsub -q short.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     print command
