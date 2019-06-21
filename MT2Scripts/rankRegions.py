@@ -27,6 +27,7 @@ for l in xsecs:
             xsec=float(xsec)*1./10.
         break
 
+if xsec==1: print 'WARNING: xsec was read as 1'
 print xsec
 
 a={}
