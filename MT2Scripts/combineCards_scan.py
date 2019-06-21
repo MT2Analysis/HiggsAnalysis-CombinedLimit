@@ -24,7 +24,9 @@ for m in models:
   #if m in mypath:
   model = m
 
-  logsDir="{}/jobs_{}/".format(os.getcwd(),model)
+  version = mypath.split('{}_'.format(model))[1]
+  logsDir="{}/jobs_{}_{}/".format(os.getcwd(),model,version)
+
   os.system("mkdir {}".format(logsDir))
 
   for d in listdir(mypath):
