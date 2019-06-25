@@ -9,5 +9,5 @@ SEPath=$3
 mkdir -p /scratch/`whoami`/limits_${Model}_${Label}/; 
 for i in $(ls -rt ${SEPath}/datacards_${Model}_${Label}/limits/); 
   do 
-    xrdcp root://t3dcachedb.psi.ch:1094//${SEPath}/datacards_${Model}_${Label}/limits/$i /scratch/`whoami`/limits_${Model}_${Label}/; 
+    xrdcp -f root://t3dcachedb.psi.ch:1094//${SEPath}/datacards_${Model}_${Label}/limits/$i /scratch/`whoami`/limits_${Model}_${Label}/; 
   done;

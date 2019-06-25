@@ -5,15 +5,16 @@ signal_point = str(sys.argv[1])
 m1 = signal_point.split("_")[1]
 #print m1
 
-filename="AsymptoticRanking_"+signal_point+"_Paper_post.txt"
+path="/scratch/mratti/ranking/"
+filename=path+"AsymptoticRanking_"+signal_point+"_Paper_post.txt"
 
-xsecFileName="/shome/casal/SUSxsecs/SUSYCrossSections13TeV"
+xsecFileName="/shome/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"
 if "T1" in signal_point:
     xsecFileName=xsecFileName+"gluglu.txt"
 elif "T2qq" in signal_point:
-    xsecFileName=xsecFileName+"squarkantisquark.txt"
+    xsecFileName=xsecFileName+"sqsq.txt"
 else:
-    xsecFileName=xsecFileName+"stopstop.txt"
+    xsecFileName=xsecFileName+"thirdGen.txt"
 
 xsecFile = open(xsecFileName, "r")
 
@@ -26,7 +27,8 @@ for l in xsecs:
             xsec=float(xsec)*1./10.
         break
 
-#print xsec
+if xsec==1: print 'WARNING: xsec was read as 1'
+print xsec
 
 a={}
 b={}
@@ -38,7 +40,7 @@ for line in open(filename):
     b[(line.split()[0])]=float(line.split()[3])
     c[(line.split()[0])]=float(line.split()[2])
 
-output=open('AsymptoticRanking_'+signal_point+'_Paper_post_ranked.txt', 'w+')
+output=open(path+'AsymptoticRanking_'+signal_point+'_Paper_post_ranked.txt', 'w+')
 #limits=a.keys()
 #limits.sort()
 limits=sorted(a.items(), key=operator.itemgetter(1))    

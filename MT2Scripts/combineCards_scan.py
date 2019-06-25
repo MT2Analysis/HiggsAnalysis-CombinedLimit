@@ -19,12 +19,21 @@ if len(sys.argv)>2:
 else:
   models   = ["T1bbbb", "T1tttt","T1qqqq","T2qq","T2bb","T2tt"]
 
+
 for m in models:
   #if m in mypath:
   model = m
 
+  version = mypath.split('{}_'.format(model))[1]
+  logsDir="{}/jobs_{}_{}/".format(os.getcwd(),model,version)
+
+  os.system("mkdir {}".format(logsDir))
+
   for d in listdir(mypath):
     # format must be tared_1525_350.tar.gz
+    #if 'limits' in d: continue
+    if 'tared_' not in d: continue
+    if 'tar.gz' not in d: continue
 
     print 'Working on ', d
     els=re.split('_|\.', d)
@@ -46,6 +55,8 @@ for m in models:
           print "file exists... skiping:",combfile
           continue
 
-    command="qsub -q short.q -o /dev/null -e /dev/null -N combineCards_"+model+"_"+str(m1)+"_"+str(m2)+" combineCards_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".out"
+    err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
+    command="qsub -q short.q -o "+out+" -e "+err+" -N combineCards_"+model+"_"+str(m1)+"_"+str(m2)+" combineCards_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
     print command
     os.system(command)

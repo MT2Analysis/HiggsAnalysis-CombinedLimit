@@ -2,10 +2,9 @@ import os
 import sys
 
 # directory to cross section
-xsecFileName="/shome/casal/SUSxsecs/SUSYCrossSections13TeV"
+xsecFileName="/shome/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"
 # path to full table
-fulltable = open("/mnt/t3nfs01/data01/shome/casal/CMSSW_7_4_12_patch4_MT2/src/analysisJul/analysis/latexBGTable_EventYields_data_Run2016_7p7ifb.tex", "r")
-
+fulltable = open("/work/mratti/mt2_workarea/CMSSW_8_0_12/src/master/analysis/latexBGTable_EventYields_moriond2019_35p9ifb.tex", "r")
 
 
 if len(sys.argv)<3:
@@ -31,9 +30,11 @@ if len(sys.argv) >3:
 if "T1" in modelpoint:
     xsecFileName=xsecFileName+"gluglu.txt"
 elif "T2qq" in modelpoint:
-    xsecFileName=xsecFileName+"squarkantisquark.txt"
+    xsecFileName=xsecFileName+"sqsq.txt"
 else:
-    xsecFileName=xsecFileName+"stopstop.txt"
+    xsecFileName=xsecFileName+"thirdGen.txt"
+
+
 
 xsecFile = open(xsecFileName, "r")
 
@@ -46,12 +47,14 @@ for l in xsecs:
             xsec=float(xsec)*1./10.
         break
 
+if xsec==1: print 'WARNING, xsec was read incorrectly'
 
 htregions={
 "HT200to450": "$200 < $H$_{\mathrm{T}} < 450$~GeV",
 "HT450to575": "$450 < $H$_{\mathrm{T}} < 575$~GeV",
 "HT575to1000": "$575 < $H$_{\mathrm{T}} < 1000$~GeV",
 "HT1000to1500": "$1000 < $H$_{\mathrm{T}} < 1500$~GeV",
+"HT1200to1500": "$1200 < $H$_{\mathrm{T}} < 1500$~GeV",
 "HT1500toInf": "H$_{\mathrm{T}} > 1500$~GeV",
 "HT200to250": "$200 < $H$_{\mathrm{T}} < 250$~GeV",
 "HT250to350": "$250 < $H$_{\mathrm{T}} < 350$~GeV",
@@ -67,6 +70,8 @@ jetregions={
 "j2to3": "$2-3$j",
 "j4to6": "$4-6$j",
 "j7toInf": "$\geq7$j",
+"j10toInf": "$\geq10$j",
+"j7to9": "$7-9$j",
 "j2to6": "$2-6$j",
 }
 
@@ -74,7 +79,10 @@ btagregions={
 "b0": "$0$b",
 "b1": "$1$b",
 "b2": "$2$b",
+"b3": "$3$b",
+"b4": "$4$b",
 "b3toInf": "$\geq3$b",
+"b4toInf": "$\geq4$b",
 "b1toInf": "$\geq1$b"
 }
 
@@ -136,7 +144,7 @@ for r in tabmt2bin:
     postfitdic[r]    =dict(zip(tabmt2bin[r], postfit[r]))
     observationdic[r]=dict(zip(tabmt2bin[r], observation[r]))
 
-bintable = open("AsymptoticRanking_"+modelpoint+"_Paper_post_plusBG.txt", "r")
+bintable = open("/scratch/mratti/ranking/AsymptoticRanking_"+modelpoint+"_Paper_post_plusBG.txt", "r")
 binlines = bintable.readlines()
 
 mt2bin, sigyield, bgyield = {}, {}, {}
@@ -152,7 +160,7 @@ for l in binlines:
         bgyield [region].append(l.strip(' \\').strip(' \\\n').replace(" ", "").split('&')[2])
         
 
-rankedtable = open("AsymptoticRanking_"+modelpoint+"_Paper_post_ranked.txt", "r")
+rankedtable = open("/scratch/mratti/ranking/AsymptoticRanking_"+modelpoint+"_Paper_post_ranked.txt", "r")
 rankedlines = rankedtable.readlines()
 
 explim, obslim, totalsig, acceptance = {}, {}, {}, {}

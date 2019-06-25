@@ -22,7 +22,7 @@ export SCRAM_ARCH=slc6_amd64_gcc491
 export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 
 echo "Loading CMSSW 80X"
-cd /shome/mratti/combine_workarea/CMSSW_8_1_0/src/
+cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
@@ -39,8 +39,6 @@ xrdcp root://t3dcachedb.psi.ch:1094/${MYCARD} ${JOBDIR}/
 
 echo "Going to run limit calculation"
 combine -M AsymptoticLimits datacard_${MODEL}_${M1}_${M2}_combined.txt -n ${MODEL}_${M1}_${M2} &> log_${MODEL}_${M1}_${M2}_combined.txt
-#echo "PIPPO CIAO" >& log_${MODEL}_${M1}_${M2}_combined.txt
-#ls -l &> log_${MODEL}_${M1}_${M2}_combined.txt
 
 echo "Output is"
 ls -al log_${MODEL}_${M1}_${M2}_combined.txt

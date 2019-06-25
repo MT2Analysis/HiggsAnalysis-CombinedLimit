@@ -1,31 +1,24 @@
 #!bin/bash
 
-#Model=('T1bbbb_fullScan_900_850' 'T1bbbb_fullScan_1600_0' 'T1bbbb_fullScan_1400_900')
-
+#Model=('T2qq_1200_850')
 Model=($1)
 
 homeDir=/scratch/`whoami`/
-inputDir=$homeDir'datacards_'${Model[0]}'/'
+inputDir=/scratch/`whoami`/datacards/datacards_${Model[0]}/ 
 
-thisDir=$PWD
-copyDir=$thisDir'/ranking_'${Model[0]}'/'
+##### not used  thisDir=$PWD
+##### not used  copyDir=$thisDir'/ranking_'${Model[0]}'/'
 
-workDir=/scratch/`whoami`/ranking_${Model[0]}'/'
+workDir=/scratch/`whoami`/ranking/ranking_${Model[0]}/
 
 mkdir -p $workDir
 cd $workDir
 
 c=0
 while [ "x${Model[c]}" != "x" ]
-#for i in $(ls $inputDir)
 do
-#    if [[ $i != *'datacard_'*$Model* ]]
-#    then
-#	continue
-#    else 
 	model=${Model[$c]}
-#	model=${i##*datacards_}
-#	echo $model
+	echo $model
 	r=0
 	for d in $(ls $inputDir*'datacard_'*${Model[$c]}*)
 	do
