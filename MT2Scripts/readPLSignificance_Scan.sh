@@ -14,11 +14,13 @@ do
 	mass=${i##*log_${Model}_}
 	mass=${mass%_combined.txt*}
 	echo $mass
-	significance=$(grep "Significance" $i | awk '{print $2}')
-	pvalue=$(grep "p-value" $i | awk '{print $3}')
-	if [[ $significance ]]
+	significance=$(grep "Significance:" $i | awk '{print $2}')
+	pvalue=$(grep "p-value of background:" $i | awk '{print $4}')
+	if [[ $pvalue ]] && [[ $pvalue != "-nan" ]]
 	then
-	echo $mass $significance $pvalue  >> significance_${Model}_full_${Label}.txt
+	#echo $significance
+        echo $pvalue
+        echo $mass $significance $pvalue  >> significance_${Model}_full_${Label}.txt
 	search="_"
 	replace=" "
 	sed -i "s/$search/$replace/g" significance_${Model}_full_${Label}.txt

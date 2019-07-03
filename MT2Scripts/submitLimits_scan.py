@@ -18,7 +18,7 @@ if len(sys.argv)>2:
 else:
   raise RuntimeError("Error: model not specified")
 
-command = "gfal-mkdir -p srm://t3se01.psi.ch/"+mypath+"limits/"
+command = "gfal-mkdir -p srm://t3se01.psi.ch/"+mypath+"/limits/"
 os.system(command)
 
 version = mypath.split('{}_'.format(model))[1]
@@ -51,8 +51,16 @@ for f in listdir(mypath):
     print model, m1, m2
 
     # temporary PATCH
-    #if int(m1) < 1400: 
-    #  print 'Only submitting jobs with mass above 1400, will skip this point', m1, m2
+    #if int(m1) >= 850: 
+    #  print 'temp patch for T2qq, Only submitting jobs with mass below 850, will skip this point', m1, m2
+    #  continue
+
+    #if (int(m1) < 350 or int(m1)>550) and (int(m2)<1 or int(m2)>200):
+    #  print 'temp patch for T2bb,  will skip this point', m1, m2  
+    #  continue
+
+    #if int(m1) >= 1300: 
+    #  print 'temp patch for T1bbbb,  will skip this point', m1, m2 
     #  continue
 
     # check if file exists and is non-empty
