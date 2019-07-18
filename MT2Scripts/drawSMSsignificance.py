@@ -118,8 +118,8 @@ h_sig_yn   = {} # pvalue in excess/deficit, interpolated
 h_sig      = {} # significance, interpolated
 g2_pvalue  = {} # TGraph2D pvalue, automatic interpolation
 
-m1min, m1max = 0, 2100
-m2min, m2max = 0, 2100
+m1min, m1max = 0, 2800
+m2min, m2max = 0, 2800
 xbinSize = 25
 #xbinSize = 25 if model!='T2cc' else 5
 ybinSize = 25 if model!='T2cc' else 5

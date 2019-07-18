@@ -24,6 +24,7 @@ os.system(command)
 version = mypath.split('{}_'.format(model))[1]
 
 logsDir="{}/sig_{}_{}/".format(os.getcwd(),model,version)
+#logsDir="{}/exp_sig_{}_{}/".format(os.getcwd(),model,version)
 os.system("mkdir {}".format(logsDir))
 
 
@@ -49,6 +50,7 @@ for f in listdir(mypath):
 
     # check if file exists and is non-empty
     logfile = mypath+"/significance/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
+    #logfile = mypath+"/exp_significance/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
     if ( os.path.isfile(logfile) ):
         print "file exists... skipping:",logfile
         continue
