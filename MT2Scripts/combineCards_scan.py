@@ -15,7 +15,7 @@ from os.path import isfile, join
 if len(sys.argv)>1:
   mypath = sys.argv[1]
 else:
-  mypath = "/pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_moriond2019_35p9ifb/"
+  mypath = "/pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_moriond2019_35p9ifb/datacards_T1qqqq_12_19_V0"
 
 if len(sys.argv)>2:
   models = [sys.argv[2]]

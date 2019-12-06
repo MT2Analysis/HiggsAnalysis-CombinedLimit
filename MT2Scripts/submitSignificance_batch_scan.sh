@@ -1,6 +1,4 @@
-#
-# exapmle:
-# qsub -l h_vmem=6g -q all.q -o $PWD/test.out -e $PWD/test.err -N test submitSignificance_batch_scan.sh /pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_dataETH_SnTMC_35p9ifb/datacards_T2qq/ T2qq 400 200
+#!/bin/bash
 
 echo $#;
 if [ $# != 4 ]; then
@@ -17,16 +15,12 @@ MYCARD="${MYPATH}/datacard_${MODEL}_${M1}_${M2}_combined.txt"
 
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
-#source /mnt/t3nfs01/data01/swshare/glite/external/etc/profile.d/grid-env.sh
-export SCRAM_ARCH=slc6_amd64_gcc491
-export LD_LIBRARY_PATH=/mnt/t3nfs01/data01/swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
-
 echo "Loading CMSSW 80X"
 cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
-JOBDIR=/scratch/`whoami`/significanceCalculation_${JOB_ID}/
+JOBDIR=/scratch/`whoami`/significanceCalculation_${SLURM_JOB_ID}/
 
 mkdir -p ${JOBDIR}
 
@@ -52,5 +46,5 @@ echo "Copying result back"
 #xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/significance/.
 xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/exp_significance/.
 
-
+rm -rf $JOBDIR
 

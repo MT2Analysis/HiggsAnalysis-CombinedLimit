@@ -26,7 +26,7 @@ cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
-JOBDIR=/scratch/`whoami`/datacardCombination_${JOB_ID}/
+JOBDIR=/scratch/`whoami`/datacardCombination_${SLURM_JOB_ID}/
 
 # actual job
 mkdir -p ${JOBDIR}
