@@ -77,4 +77,4 @@ for f in listdir(mypath):
     command="sbatch -p wn --mem=6000 --account=cn-test -o {} -e {} --job-name={}  --ntasks=1 submitLimits_batch_scan.sh {} {} {} {}".format(out, out, job_name, mypath, model, str(m1), str(m2)) 
     # time limit might have to be optimized, default is 1 day...
     print command
-    #os.system(command)
+    os.system(command)

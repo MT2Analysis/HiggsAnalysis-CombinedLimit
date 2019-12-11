@@ -16,7 +16,7 @@ MYCARD="${MYPATH}/datacard_${MODEL}_${M1}_${M2}_combined.txt"
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 echo "Loading CMSSW 80X"
-cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
+cd /work/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 
@@ -43,8 +43,8 @@ echo "Creating limit dir"
 xrdfs t3dcachedb03.psi.ch mkdir ${MYPATH}/significance/
 
 echo "Copying result back"
-#xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/significance/.
-xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/exp_significance/.
+xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/significance/.
+#xrdcp -v -f log_${MODEL}_${M1}_${M2}_combined.txt root://t3dcachedb.psi.ch:1094//${MYPATH}/exp_significance/.
 
 rm -rf $JOBDIR
 

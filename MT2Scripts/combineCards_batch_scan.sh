@@ -22,7 +22,7 @@ TarFile="tared_${M1}_${M2}.tar.gz"
 # setting up environment
 source $VO_CMS_SW_DIR/cmsset_default.sh
 echo "Loading CMSSW 80X"
-cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
+cd /work/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 

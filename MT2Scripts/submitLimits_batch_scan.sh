@@ -16,7 +16,7 @@ MYCARD="${MYPATH}/datacard_${MODEL}_${M1}_${M2}_combined.txt"
 
 source $VO_CMS_SW_DIR/cmsset_default.sh
 echo "Loading CMSSW 80X"
-cd /shome/mratti/test_combine_area/CMSSW_8_1_0/src/
+cd /work/mratti/test_combine_area/CMSSW_8_1_0/src/
 echo $PWD
 eval `scramv1 runtime -sh`
 

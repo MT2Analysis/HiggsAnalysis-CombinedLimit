@@ -29,7 +29,7 @@ for m in models:
 print "model =", model
 
 xsfile = "gluino.root" if "T1" in model else "stop.root" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "squark.root" if model=="T2qq" else "theXSfile.root"
-f_xs = ROOT.TFile("/shome/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"+xsfile)
+f_xs = ROOT.TFile("/work/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"+xsfile)
 hname = "gluglu" if "T1" in model else "thirdGen" if model=="T2tt" or model=="T2bb" or model=="T2cc" else "sqsq" if model=="T2qq" else "xs"
 h_xs = f_xs.Get(hname)
 
