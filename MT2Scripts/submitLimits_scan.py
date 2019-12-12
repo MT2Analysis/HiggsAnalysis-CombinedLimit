@@ -1,4 +1,7 @@
-# python submitLimits_scan.py <path> <model>
+''' 
+Script to launch the asymptotic limit calculation
+python submitLimits_scan.py <full-path> <model>
+'''
 
 import os
 import sys
@@ -11,19 +14,19 @@ from os.path import isfile, join
 if len(sys.argv)>1:
     mypath = sys.argv[1]
 else:
-    mypath = "/pnfs/psi.ch/cms/trivcat/store/user/casal/EventYields_data_Run2016_7p7ifb/datacards_T2bb_final/"
+    mypath = "/pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_moriond2019_35p9ifb/datacards_T1qqqq_12_19_V0"
 
 if len(sys.argv)>2:
   model = sys.argv[2]
 else:
   raise RuntimeError("Error: model not specified")
 
-command = "gfal-mkdir -p srm://t3se01.psi.ch/"+mypath+"limits/"
+command = "gfal-mkdir -p srm://t3se01.psi.ch/"+mypath+"/limits/"
 os.system(command)
 
 version = mypath.split('{}_'.format(model))[1]
  
-logsDir="{}/lim_{}_{}/".format(os.getcwd(),model,version)
+logsDir="{}/jobs_lim_{}_{}/".format(os.getcwd(),model,version)
 os.system("mkdir {}".format(logsDir))
 
 
@@ -50,9 +53,16 @@ for f in listdir(mypath):
 
     print model, m1, m2
 
-    # temporary PATCH
-    #if int(m1) < 1400: 
-    #  print 'Only submitting jobs with mass above 1400, will skip this point', m1, m2
+    #if int(m1) >= 850: 
+    #  print 'temp patch for T2qq, Only submitting jobs with mass below 850, will skip this point', m1, m2
+    #  continue
+
+    #if (int(m1) < 350 or int(m1)>550) and (int(m2)<1 or int(m2)>200):
+    #  print 'temp patch for T2bb,  will skip this point', m1, m2  
+    #  continue
+
+    #if int(m1) >= 1300: 
+    #  print 'temp patch for T1bbbb,  will skip this point', m1, m2 
     #  continue
 
     # check if file exists and is non-empty
@@ -61,12 +71,10 @@ for f in listdir(mypath):
         print "file exists... skipping:",logfile
         continue
 
-    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".out"
-    err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
+    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".log"
+    job_name = "limit_" + model + "_" +str(m1)+"_"+str(m2)
 
-    #command="qsub -q long.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
-    command="qsub -q all.q -l h_vmem=6G -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
-    #command="qsub -q all.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
-    #command="qsub -q short.q -o "+out+" -e "+err+" -N asymptoticLimit_"+model+"_"+str(m1)+"_"+str(m2)+" submitLimits_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    command="sbatch -p wn --mem=6000 --account=cn-test -o {} -e {} --job-name={}  --ntasks=1 submitLimits_batch_scan.sh {} {} {} {}".format(out, out, job_name, mypath, model, str(m1), str(m2)) 
+    # time limit might have to be optimized, default is 1 day...
     print command
     os.system(command)

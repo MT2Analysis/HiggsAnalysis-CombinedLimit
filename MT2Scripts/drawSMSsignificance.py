@@ -5,6 +5,8 @@ from sys import argv,exit
 from optparse import OptionParser
 import ROOT
 
+ROOT.gROOT.SetBatch(True)
+
 print "running:", argv
 
 if len(argv)<2:
@@ -28,7 +30,7 @@ print "model =", model
 pvalues = ["pvalue"]
 
 # coloum-limit map for txt files (n -> column n+1) 
-fileMap = {"pvalue":3}
+fileMap = {"pvalue":2}
 
 
 def getSigYN ( h_pvalue, r_excluded=0.5):
@@ -61,6 +63,7 @@ def readPvaluesFromFile(INPUT, fileMap, h_pvalue0, h_sig0, h_sig_yn0):
         m1        = float(line.split()[0])
         m2        = float(line.split()[1])
         for lim,index in fileMap.iteritems():
+            print lim,index, line.split()
             rlim[lim]  = float(line.split()[index])
 
         rlim['sig'] = ROOT.TMath.NormQuantile(1-(rlim['pvalue']))
@@ -115,8 +118,8 @@ h_sig_yn   = {} # pvalue in excess/deficit, interpolated
 h_sig      = {} # significance, interpolated
 g2_pvalue  = {} # TGraph2D pvalue, automatic interpolation
 
-m1min, m1max = 0, 2100
-m2min, m2max = 0, 2100
+m1min, m1max = 0, 2800
+m2min, m2max = 0, 2800
 xbinSize = 25
 #xbinSize = 25 if model!='T2cc' else 5
 ybinSize = 25 if model!='T2cc' else 5
@@ -199,9 +202,9 @@ if( not os.path.isdir(plotsDir) ):
     os.system("mkdir "+plotsDir)
 for lim in pvalues:
     ROOT.gStyle.SetNumberContours( 100 )
-    xmin = 600 if "T1" in model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 300 if model=="T2qq" else 0
-    xmax = 1200 if model=="T2tt"  or model=="T2bb" else 1600 if model=="T2qq" else 800 if model=='T2cc' else 2100 if model=="T1bbbb" else 2000
-    ymax = 700  if model=="T2tt" else 800 if model=="T2bb" or model=="T2cc" else 1200 if model=="T2qq" else 1800
+    xmin = 600 if ("T1qqqq" == model or "T1tttt" == model) else 800 if "T1bbbb" == model else 150 if model=="T2tt" or model=='T2cc' else 300 if model=="T2bb" else 550 if model=="T2qq" else 0
+    xmax = 1500 if (model=="T2tt" or model=="T2bb") else 2000 if model=="T2qq" else 800 if model=="T2cc" else 2500 if model=="T1bbbb" else 2400
+    ymax = 700 if model=="T2tt" else 1200 if model=="T2bb" or model=="T2cc" else 1600 if model=="T2qq" else 2000 if (model=="T1qqqq" or model=="T1tttt") else 2200 if model=="T1bbbb" else 2000
     h_sig0[lim].GetXaxis().SetRangeUser(xmin, xmax)
     h_sig0[lim].GetYaxis().SetRangeUser(0   , ymax)
     h_sig0[lim].Draw("colz")

@@ -1,5 +1,8 @@
-# Script to launch the datacard combination for the signals
-# python combineCards_scan.py <path> <model>
+''' 
+Script to launch the datacard combination for the signals
+python combineCards_scan.py <full-path> <model>
+Will do combination of data-cards present in the specified path
+'''
 
 import os
 import sys
@@ -12,7 +15,7 @@ from os.path import isfile, join
 if len(sys.argv)>1:
   mypath = sys.argv[1]
 else:
-  mypath = "/pnfs/psi.ch/cms/trivcat/store/user/casal/EventYields_data_Run2016_7p7ifb/datacards_T2bb_final/"
+  mypath = "/pnfs/psi.ch/cms/trivcat/store/user/mratti/datacards/EventYields_moriond2019_35p9ifb/datacards_T1qqqq_12_19_V0"
 
 if len(sys.argv)>2:
   models = [sys.argv[2]]
@@ -25,7 +28,7 @@ for m in models:
   model = m
 
   version = mypath.split('{}_'.format(model))[1]
-  logsDir="{}/jobs_{}_{}/".format(os.getcwd(),model,version)
+  logsDir="{}/jobs_comb_{}_{}/".format(os.getcwd(),model,version)
 
   os.system("mkdir {}".format(logsDir))
 
@@ -52,11 +55,14 @@ for m in models:
             command = "gfal-rm srm://t3se01.psi.ch/"+combfile
             os.system(command)
         else:
-          print "file exists... skiping:",combfile
+          print "file exists... skipping:",combfile
           continue
 
-    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".out"
-    err = logsDir+"log_"+str(m1)+"_"+str(m2)+".err"
-    command="qsub -q short.q -o "+out+" -e "+err+" -N combineCards_"+model+"_"+str(m1)+"_"+str(m2)+" combineCards_batch_scan.sh "+mypath+" "+model+" "+str(m1)+" "+str(m2)
+    out = logsDir+"log_"+str(m1)+"_"+str(m2)+".log"
+    job_name = "combineCards_"+model+"_"+str(m1)+"_"+str(m2)
+
+    command="sbatch -p wn --account=cn-test -o {} -e {} --job-name={} --time=0-00:20 --ntasks=1 combineCards_batch_scan.sh {} {} {} {}".format(out, out, job_name, mypath, model, str(m1), str(m2)) 
+
     print command
+
     os.system(command)
