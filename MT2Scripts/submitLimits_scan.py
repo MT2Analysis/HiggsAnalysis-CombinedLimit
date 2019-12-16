@@ -6,6 +6,7 @@ python submitLimits_scan.py <full-path> <model>
 import os
 import sys
 import commands
+import subprocess
 
 from os import listdir
 from os.path import isfile, join
@@ -65,10 +66,11 @@ for f in listdir(mypath):
     #  print 'temp patch for T1bbbb,  will skip this point', m1, m2 
     #  continue
 
-    # check if file exists and is non-empty
+    # check if file exists and it has information on the limits
     logfile = mypath+"/limits/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
-    if ( os.path.isfile(logfile) ):
-        print "file exists... skipping:",logfile
+    out = subprocess.check_output('xrdfs t3dcachedb03.psi.ch cat {}'.format(logfile), shell=True)
+    if (os.path.isfile(logfile) and out.find('-- AsymptoticLimits ( CLs ) --')!=-1):
+        print "File exists and has information on limits ... skipping:",logfile
         continue
 
     out = logsDir+"log_"+str(m1)+"_"+str(m2)+".log"
