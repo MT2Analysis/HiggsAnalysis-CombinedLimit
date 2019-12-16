@@ -33,6 +33,7 @@ os.system("mkdir {}".format(logsDir))
 
 for f in listdir(mypath):
 
+
     if ".txt" not in f:
       continue
 
@@ -46,7 +47,7 @@ for f in listdir(mypath):
     #if os.stat(f).st_size == 0:
     #    print "Combined data-card ", f, " is empty, skipping limit calculation"
     #    continue
-
+    print '\n'
     print f
     #model=f.split("_")[1]
     m1   =f.split("_")[2]
@@ -68,10 +69,26 @@ for f in listdir(mypath):
 
     # check if file exists and it has information on the limits
     logfile = mypath+"/limits/log_"+model+"_"+str(m1)+"_"+str(m2)+"_combined.txt"
-    out = subprocess.check_output('xrdfs t3dcachedb03.psi.ch cat {}'.format(logfile), shell=True)
-    if (os.path.isfile(logfile) and out.find('-- AsymptoticLimits ( CLs ) --')!=-1):
-        print "File exists and has information on limits ... skipping:",logfile
-        continue
+    if os.path.isfile(logfile):
+
+      try:
+        out = subprocess.check_output('xrdfs t3dcachedb03.psi.ch cat {}'.format(logfile), shell=True)
+        if (out.find('-- AsymptoticLimits ( CLs ) --')!=-1):
+          print "File exists and has information on limits ... skipping:",logfile
+          continue
+
+      except subprocess.CalledProcessError as e:
+        print 'ERROR ', e, '  retrying'
+
+        try:
+          out = subprocess.check_output('xrdfs t3dcachedb03.psi.ch cat {}'.format(logfile), shell=True)
+          if (out.find('-- AsymptoticLimits ( CLs ) --')!=-1):
+            print "File exists and has information on limits ... skipping:",logfile
+            continue 
+
+        except subprocess.CalledProcessError as e:
+          print 'ERROR ', e, 'skipping this point'
+          continue
 
     out = logsDir+"log_"+str(m1)+"_"+str(m2)+".log"
     job_name = "limit_" + model + "_" +str(m1)+"_"+str(m2)
