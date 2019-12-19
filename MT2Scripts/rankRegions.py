@@ -8,7 +8,7 @@ m1 = signal_point.split("_")[1]
 path="/scratch/mratti/ranking/"
 filename=path+"AsymptoticRanking_"+signal_point+"_Paper_post.txt"
 
-xsecFileName="/shome/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"
+xsecFileName="/work/mratti/SUSxsecs/NNLO_approx_NNLL_80X_compatible/"
 if "T1" in signal_point:
     xsecFileName=xsecFileName+"gluglu.txt"
 elif "T2qq" in signal_point:
@@ -21,8 +21,8 @@ xsecFile = open(xsecFileName, "r")
 xsec=1.0;
 xsecs = xsecFile.readlines()
 for l in xsecs:
-    if l.split()[0]==m1:
-        xsec = float(l.split()[2])
+    if l.split()[1].replace(".", "")==m1:
+        xsec = float(l.split()[3])
         if "T2qq" in signal_point:
             xsec=float(xsec)*1./10.
         break
